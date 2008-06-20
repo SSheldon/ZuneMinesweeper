@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C# Express 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minesweeper", "Minesweeper\Minesweeper.csproj", "{9DD07AD4-80E5-4C3A-981C-3DAFD9E3ADEB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Zune = Debug|Zune
+		Release|Zune = Release|Zune
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9DD07AD4-80E5-4C3A-981C-3DAFD9E3ADEB}.Debug|Zune.ActiveCfg = Debug|Zune
+		{9DD07AD4-80E5-4C3A-981C-3DAFD9E3ADEB}.Debug|Zune.Build.0 = Debug|Zune
+		{9DD07AD4-80E5-4C3A-981C-3DAFD9E3ADEB}.Debug|Zune.Deploy.0 = Debug|Zune
+		{9DD07AD4-80E5-4C3A-981C-3DAFD9E3ADEB}.Release|Zune.ActiveCfg = Release|Zune
+		{9DD07AD4-80E5-4C3A-981C-3DAFD9E3ADEB}.Release|Zune.Build.0 = Release|Zune
+		{9DD07AD4-80E5-4C3A-981C-3DAFD9E3ADEB}.Release|Zune.Deploy.0 = Release|Zune
+		{5A72103B-8795-4DB2-A56E-57F1932E029C}.Debug|Zune.ActiveCfg = Debug|Zune
+		{5A72103B-8795-4DB2-A56E-57F1932E029C}.Release|Zune.ActiveCfg = Release|Zune
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
