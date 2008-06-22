@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("Minesweeper")]
 [assembly: AssemblyProduct("Minesweeper")]
-[assembly: AssemblyDescription("A blatant rip-off of the Windows Operating System's greatest feature. It's Minesweeper!")]
+[assembly: AssemblyDescription("A blatant rip-off of the Windows Operating System's greatest feature. It's Minesweeper! Minesweeper © Microsoft. Ported by CouchPotato99.")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyCopyright("Copyright ©  2008")]
 [assembly: AssemblyTrademark("")]
