@@ -7,6 +7,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Storage;
+using Microsoft.Xna.Framework.GamerServices;
+using System.IO;
 
 namespace Minesweeper
 {
@@ -18,6 +20,8 @@ namespace Minesweeper
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         MinesweeperGame mGame;
+        StorageDevice storageDevice;
+        StorageContainer container;
 
         protected Texture2D top;
         protected Texture2D[] numbers = new Texture2D[12];
@@ -27,16 +31,18 @@ namespace Minesweeper
         protected Texture2D[] t = new Texture2D[9];
         protected Texture2D tHidden, tFlag, tMine, tNotMine, tClickedMine;
         protected Texture2D select;
-        protected Texture2D mTop, mResume, mResumeGray, mNewGame, mMusic, mBestTimes, mOptions, mExit, mSelect;
-        protected Texture2D newGameMenu;
-        protected Texture2D customGameMenu, rightArrow, leftArrow;
-        protected Texture2D optionsMenu, oCantSelectRevealed, oCanSelectRevealed;
+        protected Texture2D mTop, mSelect;
+        protected Texture2D numBox, rightArrow, leftArrow;
+        protected SpriteFont font, header, small;
 
         protected int height;
         protected int width;
         protected int mines;
         protected bool cantSelectRevealed;
+        protected bool flagWithPlay;
+        protected bool oldCantSelectRevealed, oldFlagWithPlay;
         protected int tempHeight, tempWidth, tempMines;
+        protected int bestBeginner, bestIntermediate, bestExpert, bestZune;
 
         protected int flags;
         protected int time;
@@ -47,24 +53,29 @@ namespace Minesweeper
         protected enum Face { Happy, Win, Dead, Scared };
         protected Face faceValue;
         protected GamePadState newPadState;
-        protected enum GameState { NotPlaying, Playing, Won, Lost, Menu, NewGameMenu, CustomGameMenu, OptionsMenu };
+        protected enum GameState { NotPlaying, Playing, Won, Lost, Menu, NewGameMenu, CustomGameMenu, OptionsMenu, BestTimesMenu };
         protected GameState gameState;
         protected GameState oldGameState;
+        protected enum Difficulty { Beginner, Intermediate, Expert, Zune }
         protected bool faceSelected;
-        protected enum MenuItem { Resume, NewGame, Music, BestTimes, Options, Exit };
-        protected MenuItem selectedMenuItem;
         protected bool resumable;
-        protected enum NewGameMenuItem { Beginner, Intermediate, Expert, Zune, Custom, Back };
-        protected NewGameMenuItem selectedNewGameItem;
-        protected enum CustomGameMenuItem { Height, Width, Mines, OK, Back };
-        protected CustomGameMenuItem selectedCustomGameItem;
-        protected enum OptionsMenuItem { CantSelectRevealedTiles, Back };
-        protected OptionsMenuItem selectedOptionsItem;
+        Menu mainMenu;
+        MenuItem resume, newGame, music, bestTimes, options, exit;
+        Menu newGameMenu;
+        MenuItem beginner, intermediate, expert, zune, custom, back;
+        Menu optionsMenu;
+        MenuItem cantSelectRevealedMI, flagButton;
+        Menu customGameMenu;
+        MenuItem heightMI, widthMI, minesMI, ok;
+        Menu bestTimesMenu;
+        MenuItem bestBeginnerMI, bestIntermediateMI, bestExpertMI, bestZuneMI, resetMI;
 
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+
+            this.Components.Add(new GamerServicesComponent(this));
         }
 
         /// <summary>
@@ -76,6 +87,17 @@ namespace Minesweeper
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            IAsyncResult syncResult = Guide.BeginShowStorageDeviceSelector(null, null);
+            //while (!ar.IsCompleted) Thread.Sleep(10);
+            storageDevice = Guide.EndShowStorageDeviceSelector(syncResult);
+            //if (!storageDevice.IsConnected) Exit();
+            container = storageDevice.OpenContainer("Minesweeper");
+            bestBeginner = 999;
+            bestIntermediate = 999;
+            bestExpert = 999;
+            bestZune = 999;
+            GetBestTimes();
+
             height = 9;
             width = 9;
             mines = 10;
@@ -86,6 +108,7 @@ namespace Minesweeper
             if (mines > (height - 1) * (width - 1)) mines = (height - 1) * (width - 1);
             if (mines < 10) mines = 10;
             cantSelectRevealed = true;
+            flagWithPlay = true;
             flags = mines;
             gameState = GameState.Menu;
             oldGameState = GameState.NotPlaying;
@@ -98,12 +121,10 @@ namespace Minesweeper
             corner[1] = 0;
             mGame = new MinesweeperGame(height, width, mines);
             totalTime = 0.0;
-            selectedMenuItem = MenuItem.NewGame;
             resumable = false;
-            selectedNewGameItem = NewGameMenuItem.Beginner;
-            selectedCustomGameItem = CustomGameMenuItem.Height;
-            selectedOptionsItem = OptionsMenuItem.CantSelectRevealedTiles;
 
+            GetOptions();
+            
             base.Initialize();
         }
 
@@ -148,21 +169,15 @@ namespace Minesweeper
             tClickedMine = Content.Load<Texture2D>(@"Tiles/clickedbomb");
             select = Content.Load<Texture2D>(@"select");
             mTop = Content.Load<Texture2D>(@"Menu/top");
-            mResume = Content.Load<Texture2D>(@"Menu/resume");
-            mResumeGray = Content.Load<Texture2D>(@"Menu/resume gray");
-            mNewGame = Content.Load<Texture2D>(@"Menu/new game");
-            mMusic = Content.Load<Texture2D>(@"Menu/music gray");
-            mBestTimes = Content.Load<Texture2D>(@"Menu/best times gray");
-            mOptions = Content.Load<Texture2D>(@"Menu/options");
-            mExit = Content.Load<Texture2D>(@"Menu/exit");
             mSelect = Content.Load<Texture2D>(@"Menu/select");
-            newGameMenu = Content.Load<Texture2D>(@"Menu/new game menu");
-            customGameMenu = Content.Load<Texture2D>(@"Menu/custom game menu");
+            numBox = Content.Load<Texture2D>(@"Menu/number back");
             rightArrow = Content.Load<Texture2D>(@"Menu/right arrow");
             leftArrow = Content.Load<Texture2D>(@"Menu/left arrow");
-            optionsMenu = Content.Load<Texture2D>(@"Menu/options menu");
-            oCantSelectRevealed = Content.Load<Texture2D>(@"Menu/cant select revealed");
-            oCanSelectRevealed = Content.Load<Texture2D>(@"Menu/can select revealed");
+            font = Content.Load<SpriteFont>(@"fonts/normal");
+            header = Content.Load<SpriteFont>(@"fonts/header");
+            small = Content.Load<SpriteFont>(@"fonts/small");
+
+            InitializeMenus();
         }
 
         /// <summary>
@@ -172,6 +187,89 @@ namespace Minesweeper
         protected override void UnloadContent()
         {
             // TODO: Unload any non ContentManager content here
+        }
+
+        protected void InitializeMenus()
+        {
+            mainMenu = new Menu(mTop, mSelect);
+            resume = new MenuItem("Resume", resumable, font);
+            resume.itemClicked += new ItemClick(Resume);
+            mainMenu.Add(0, ref resume);
+            newGame = new MenuItem("New Game", font);
+            newGame.itemClicked += new ItemClick(NewGameClick);
+            mainMenu.Add(1, ref newGame);
+            music = new MenuItem("Music", false, font);
+            music.itemClicked += new ItemClick(DoNothing);
+            mainMenu.Add(2, ref music);
+            bestTimes = new MenuItem("Best Times", font);
+            bestTimes.itemClicked += new ItemClick(BestTimesClick);
+            mainMenu.Add(3, ref bestTimes);
+            options = new MenuItem("Options", font);
+            options.itemClicked +=new ItemClick(OptionsClick);
+            mainMenu.Add(4, ref options);
+            exit = new MenuItem("Exit", font);
+            exit.itemClicked += new ItemClick(Exit);
+            mainMenu.Add(5, ref exit);
+
+            newGameMenu = new Menu("New Game:", header, mSelect);
+            beginner = new MenuItem("Beginner", font);
+            beginner.itemClicked += new ItemClick(BeginnerClick);
+            newGameMenu.Add(0, ref beginner);
+            intermediate = new MenuItem("Intermediate", font);
+            intermediate.itemClicked += new ItemClick(IntermediateClick);
+            newGameMenu.Add(1, ref intermediate);
+            expert = new MenuItem("Expert", font);
+            expert.itemClicked += new ItemClick(ExpertClick);
+            newGameMenu.Add(2, ref expert);
+            zune = new MenuItem("Zune Fit", font);
+            zune.itemClicked += new ItemClick(ZuneClick);
+            newGameMenu.Add(3, ref zune);
+            custom = new MenuItem("Custom", font);
+            custom.itemClicked += new ItemClick(CustomClick);
+            newGameMenu.Add(4, ref custom);
+            back = new MenuItem("Back", font);
+            back.itemClicked += new ItemClick(Back);
+            newGameMenu.Add(5, ref back);
+
+            optionsMenu = new Menu("Options:", header, mSelect);
+            cantSelectRevealedMI = new MenuItem("Revealed tiles can't be selected", small);
+            cantSelectRevealedMI.smallFont = true;
+            cantSelectRevealedMI.itemClicked += new ItemClick(CantSelectRevealedClick);
+            optionsMenu.Add(0, ref cantSelectRevealedMI);
+            flagButton = new MenuItem("Flag tiles with Play button", small);
+            flagButton.smallFont = true;
+            flagButton.itemClicked += new ItemClick(FlagButtonClick);
+            optionsMenu.Add(1, ref flagButton);
+            optionsMenu.Add(5, ref back);
+
+            customGameMenu = new Menu("Custom Game:", header, mSelect);
+            heightMI = new MenuItem("Height", font);
+            heightMI.itemClicked += new ItemClick(DoNothing);
+            customGameMenu.Add(0, ref heightMI);
+            widthMI = new MenuItem("Width", font);
+            widthMI.itemClicked += new ItemClick(DoNothing);
+            customGameMenu.Add(1, ref widthMI);
+            minesMI = new MenuItem("Mines", font);
+            minesMI.itemClicked += new ItemClick(DoNothing);
+            customGameMenu.Add(2, ref minesMI);
+            ok = new MenuItem("OK", font);
+            ok.itemClicked += new ItemClick(OKClick);
+            customGameMenu.Add(4, ref ok);
+            customGameMenu.Add(5, ref back);
+
+            bestTimesMenu = new Menu("Best Times:", header, mSelect);
+            bestBeginnerMI = new MenuItem("Beginner:", false, true, font);
+            bestTimesMenu.Add(0, ref bestBeginnerMI);
+            bestIntermediateMI = new MenuItem("Intermed.:", false, true, font);
+            bestTimesMenu.Add(1, ref bestIntermediateMI);
+            bestExpertMI = new MenuItem("Expert:", false, true, font);
+            bestTimesMenu.Add(2, ref bestExpertMI);
+            bestZuneMI = new MenuItem("Zune Fit:", false, true, font);
+            bestTimesMenu.Add(3, ref bestZuneMI);
+            resetMI = new MenuItem("Reset Times", font);
+            resetMI.itemClicked += new ItemClick(ResetClick);
+            bestTimesMenu.Add(4, ref resetMI);
+            bestTimesMenu.Add(5, ref back);
         }
 
         /// <summary>
@@ -191,21 +289,20 @@ namespace Minesweeper
                 totalTime += gameTime.ElapsedGameTime.TotalSeconds;
                 time = Convert.ToInt32(totalTime);
             }
+            if (time > 999) time = 999;
+
+            resume.selectable = resumable;
+            resume.color = resumable;
+            cantSelectRevealedMI.text = cantSelectRevealed ? "Revealed tiles can't be selected" : "Revealed tiles can be selected";
+            flagButton.text = flagWithPlay ? "Flag tiles with Play button" : "Flag tiles with Center button";
 
             GamePadState oldPadState = newPadState;
             newPadState = GamePad.GetState(PlayerIndex.One);
 
-            int gameStateNum = 0;
-            if (gameState == GameState.Playing || gameState == GameState.NotPlaying) gameStateNum = 0;
-            if (gameState == GameState.Lost || gameState == GameState.Won) gameStateNum = 1;
-            if (gameState == GameState.Menu) gameStateNum = 2;
-            if (gameState == GameState.NewGameMenu) gameStateNum = 3;
-            if (gameState == GameState.CustomGameMenu) gameStateNum = 4;
-            if (gameState == GameState.OptionsMenu) gameStateNum = 5;
-
-            switch (gameStateNum)
+            switch (gameState)
             {
-                case 0:
+                case GameState.NotPlaying:
+                case GameState.Playing:
                     if (newPadState.DPad.Right == ButtonState.Pressed && oldPadState.DPad.Right == ButtonState.Released && !faceSelected)
                     {
                         if (selectedTile[0] < width - 1) selectedTile[0]++;
@@ -350,27 +447,29 @@ namespace Minesweeper
                     }
                     if (newPadState.Buttons.A == ButtonState.Pressed)
                     {
-                        if (!faceSelected) faceValue = Face.Scared;
+                        if (!faceSelected & flagWithPlay) faceValue = Face.Scared;
                     }
                     if (newPadState.Buttons.A == ButtonState.Released && oldPadState.Buttons.A == ButtonState.Pressed)
                     {
-                        if (faceSelected)
-                        {
-                            NewGame();
-                            //this.Initialize();
-                        }
-                        else TileClick();
+                        if (faceSelected) SetGame();
+                        else
+                            if (flagWithPlay) TileClick();
+                            else TileFlag();
                     }
-                    if (newPadState.Buttons.B == ButtonState.Pressed && oldPadState.Buttons.B == ButtonState.Released)
+                    if (newPadState.Buttons.B == ButtonState.Pressed)
                     {
-                        if (!faceSelected) TileFlag();
+                        if (!faceSelected & !flagWithPlay) faceValue = Face.Scared;
+                    }
+                    if (newPadState.Buttons.B == ButtonState.Released && oldPadState.Buttons.B == ButtonState.Pressed)
+                    {
+                        if (!faceSelected)
+                            if (flagWithPlay) TileFlag();
+                            else TileClick();
                     }
                     if (newPadState.Buttons.Back == ButtonState.Pressed && oldPadState.Buttons.Back == ButtonState.Released)
                     {
                         oldGameState = gameState;
                         gameState = GameState.Menu;
-                        if (resumable) selectedMenuItem = MenuItem.Resume;
-                        else selectedMenuItem = MenuItem.NewGame;
                     }
                     if (height > 15)
                     {
@@ -405,257 +504,142 @@ namespace Minesweeper
                         }
                     }
                     break;
-                case 1:
+                case GameState.Lost:
+                case GameState.Won:
                     if (newPadState.Buttons.A == ButtonState.Pressed && oldPadState.Buttons.A == ButtonState.Released && faceSelected)
                     {
-                        NewGame();
+                        SetGame();
                     }
                     if (newPadState.Buttons.Back == ButtonState.Pressed && oldPadState.Buttons.Back == ButtonState.Released)
                     {
                         oldGameState = gameState;
                         gameState = GameState.Menu;
-                        if (resumable) selectedMenuItem = MenuItem.Resume;
-                        else selectedMenuItem = MenuItem.NewGame;
                     }
                     break;
-                case 2:
+                case GameState.Menu:
                     if (newPadState.DPad.Down == ButtonState.Pressed && oldPadState.DPad.Down == ButtonState.Released)
                     {
-                        if (selectedMenuItem == MenuItem.Resume) selectedMenuItem = MenuItem.NewGame;
-                        else
-                            if (selectedMenuItem == MenuItem.NewGame) selectedMenuItem = MenuItem.Options;
-                            else
-                                if (selectedMenuItem == MenuItem.Options) selectedMenuItem = MenuItem.Exit;
-                                else
-                                    if (selectedMenuItem == MenuItem.Exit)
-                                    {
-                                        if (resumable) selectedMenuItem = MenuItem.Resume;
-                                        else selectedMenuItem = MenuItem.NewGame;
-                                    }
+                        mainMenu.DownClick();
                     }
                     if (newPadState.DPad.Up == ButtonState.Pressed && oldPadState.DPad.Up == ButtonState.Released)
                     {
-                        if (selectedMenuItem == MenuItem.Resume) selectedMenuItem = MenuItem.Exit;
-                        else
-                            if (selectedMenuItem == MenuItem.Exit) selectedMenuItem = MenuItem.Options;
-                            else
-                                if (selectedMenuItem == MenuItem.Options) selectedMenuItem = MenuItem.NewGame;
-                                else
-                                    if (selectedMenuItem == MenuItem.NewGame)
-                                    {
-                                        if (resumable) selectedMenuItem = MenuItem.Resume;
-                                        else selectedMenuItem = MenuItem.Exit;
-                                    }
+                        mainMenu.UpClick();
                     }
                     if (newPadState.Buttons.A == ButtonState.Released && oldPadState.Buttons.A == ButtonState.Pressed)
                     {
-                        if (selectedMenuItem == MenuItem.Resume) gameState = oldGameState;
-                        if (selectedMenuItem == MenuItem.NewGame)
-                        {
-                            gameState = GameState.NewGameMenu;
-                        }
-                        if (selectedMenuItem == MenuItem.Options)
-                        {
-                            gameState = GameState.OptionsMenu;
-                        }
-                        if (selectedMenuItem == MenuItem.Exit)
-                        {
-                            this.Exit();
-                        }
+                        mainMenu.ClickItem();
                     }
                     if (newPadState.Buttons.Back == ButtonState.Pressed && oldPadState.Buttons.Back == ButtonState.Released)
                     {
                         if (resumable) gameState = oldGameState;
                     }
                     break;
-                case 3:
+                case GameState.NewGameMenu:
                     if (newPadState.DPad.Down == ButtonState.Pressed && oldPadState.DPad.Down == ButtonState.Released)
                     {
-                        if (selectedNewGameItem == NewGameMenuItem.Beginner) selectedNewGameItem = NewGameMenuItem.Intermediate;
-                        else
-                            if (selectedNewGameItem == NewGameMenuItem.Intermediate) selectedNewGameItem = NewGameMenuItem.Expert;
-                            else
-                                if (selectedNewGameItem == NewGameMenuItem.Expert) selectedNewGameItem = NewGameMenuItem.Zune;
-                                else
-                                    if (selectedNewGameItem == NewGameMenuItem.Zune) selectedNewGameItem = NewGameMenuItem.Custom;
-                                    else
-                                        if (selectedNewGameItem == NewGameMenuItem.Custom) selectedNewGameItem = NewGameMenuItem.Back;
-                                        else selectedNewGameItem = NewGameMenuItem.Beginner;
+                        newGameMenu.DownClick();
                     }
                     if (newPadState.DPad.Up == ButtonState.Pressed && oldPadState.DPad.Up == ButtonState.Released)
                     {
-                        if (selectedNewGameItem == NewGameMenuItem.Beginner) selectedNewGameItem = NewGameMenuItem.Back;
-                        else
-                            if (selectedNewGameItem == NewGameMenuItem.Intermediate) selectedNewGameItem = NewGameMenuItem.Beginner;
-                            else
-                                if (selectedNewGameItem == NewGameMenuItem.Expert) selectedNewGameItem = NewGameMenuItem.Intermediate;
-                                else
-                                    if (selectedNewGameItem == NewGameMenuItem.Zune) selectedNewGameItem = NewGameMenuItem.Expert;
-                                    else
-                                        if (selectedNewGameItem == NewGameMenuItem.Custom) selectedNewGameItem = NewGameMenuItem.Zune;
-                                        else selectedNewGameItem = NewGameMenuItem.Custom;
+                        newGameMenu.UpClick();
                     }
                     if (newPadState.Buttons.A == ButtonState.Released && oldPadState.Buttons.A == ButtonState.Pressed)
                     {
-                        if (selectedNewGameItem == NewGameMenuItem.Beginner)
-                        {
-                            height = 9;
-                            width = 9;
-                            mines = 10;
-                            NewGame();
-                            gameState = GameState.NotPlaying;
-                            resumable = true;
-                        }
-                        if (selectedNewGameItem == NewGameMenuItem.Intermediate)
-                        {
-                            height = 16;
-                            width = 16;
-                            mines = 40;
-                            NewGame();
-                            gameState = GameState.NotPlaying;
-                            resumable = true;
-                        }
-                        if (selectedNewGameItem == NewGameMenuItem.Expert)
-                        {
-                            height = 24;
-                            width = 30;
-                            mines = 99;
-                            NewGame();
-                            gameState = GameState.NotPlaying;
-                            resumable = true;
-                        }
-                        if (selectedNewGameItem == NewGameMenuItem.Zune)
-                        {
-                            height = 15;
-                            width = 14;
-                            mines = 30;
-                            NewGame();
-                            gameState = GameState.NotPlaying;
-                            resumable = true;
-                        }
-                        if (selectedNewGameItem == NewGameMenuItem.Custom)
-                        {
-                            gameState = GameState.CustomGameMenu;
-                            tempHeight = height;
-                            tempWidth = width;
-                            tempMines = mines;
-                        }
-                        if (selectedNewGameItem == NewGameMenuItem.Back)
-                        {
-                            gameState = GameState.Menu;
-                        }
+                        newGameMenu.ClickItem();
                     }
                     if (newPadState.Buttons.Back == ButtonState.Pressed && oldPadState.Buttons.Back == ButtonState.Released)
                     {
-                        gameState = GameState.Menu;
+                        Back();
                     }
                     break;
-                case 4:
+                case GameState.CustomGameMenu:
                     if (newPadState.DPad.Down == ButtonState.Pressed && oldPadState.DPad.Down == ButtonState.Released)
                     {
-                        if (selectedCustomGameItem == CustomGameMenuItem.Height) selectedCustomGameItem = CustomGameMenuItem.Width;
-                        else
-                            if (selectedCustomGameItem == CustomGameMenuItem.Width) selectedCustomGameItem = CustomGameMenuItem.Mines;
-                            else
-                                if (selectedCustomGameItem == CustomGameMenuItem.Mines) selectedCustomGameItem = CustomGameMenuItem.OK;
-                                else
-                                    if (selectedCustomGameItem == CustomGameMenuItem.OK) selectedCustomGameItem = CustomGameMenuItem.Back;
-                                    else selectedCustomGameItem = CustomGameMenuItem.Height;
+                        customGameMenu.DownClick();
                     }
                     if (newPadState.DPad.Up == ButtonState.Pressed && oldPadState.DPad.Up == ButtonState.Released)
                     {
-                        if (selectedCustomGameItem == CustomGameMenuItem.Height) selectedCustomGameItem = CustomGameMenuItem.Back;
-                        else
-                            if (selectedCustomGameItem == CustomGameMenuItem.Width) selectedCustomGameItem = CustomGameMenuItem.Height;
-                            else
-                                if (selectedCustomGameItem == CustomGameMenuItem.Mines) selectedCustomGameItem = CustomGameMenuItem.Width;
-                                else
-                                    if (selectedCustomGameItem == CustomGameMenuItem.OK) selectedCustomGameItem = CustomGameMenuItem.Mines;
-                                    else selectedCustomGameItem = CustomGameMenuItem.OK;
+                        customGameMenu.UpClick();
                     }
                     if (newPadState.DPad.Right == ButtonState.Pressed && oldPadState.DPad.Right == ButtonState.Released)
                     {
-                        if (selectedCustomGameItem == CustomGameMenuItem.Height)
+                        switch (customGameMenu.selectedItem)
                         {
-                            tempHeight++;
-                            if (tempHeight > 24) tempHeight = 9;
-                        }
-                        if (selectedCustomGameItem == CustomGameMenuItem.Width)
-                        {
-                            tempWidth++;
-                            if (tempWidth > 30) tempWidth = 9;
-                        }
-                        if (selectedCustomGameItem == CustomGameMenuItem.Mines)
-                        {
-                            tempMines++;
-                            if (tempMines > (tempHeight - 1) * (tempWidth - 1)) tempMines = 10;
+                            case 0:
+                                tempHeight++;
+                                if (tempHeight > 24) tempHeight = 9;
+                                break;
+                            case 1:
+                                tempWidth++;
+                                if (tempWidth > 30) tempWidth = 9;
+                                break;
+                            case 2:
+                                tempMines++;
+                                if (tempMines > (tempHeight - 1) * (tempWidth - 1)) tempMines = 10;
+                                break;
                         }
                     }
                     if (newPadState.DPad.Left == ButtonState.Pressed && oldPadState.DPad.Left == ButtonState.Released)
                     {
-                        if (selectedCustomGameItem == CustomGameMenuItem.Height)
+                        switch (customGameMenu.selectedItem)
                         {
-                            tempHeight--;
-                            if (tempHeight < 9) tempHeight = 24;
-                        }
-                        if (selectedCustomGameItem == CustomGameMenuItem.Width)
-                        {
-                            tempWidth--;
-                            if (tempWidth < 9) tempWidth = 30;
-                        }
-                        if (selectedCustomGameItem == CustomGameMenuItem.Mines)
-                        {
-                            tempMines--;
-                            if (tempMines < 10) tempMines = (tempHeight - 1) * (tempWidth - 1);
+                            case 0:
+                                tempHeight--;
+                                if (tempHeight < 9) tempHeight = 24;
+                                break;
+                            case 1:
+                                tempWidth--;
+                                if (tempWidth < 9) tempWidth = 30;
+                                break;
+                            case 2:
+                                tempMines--;
+                                if (tempMines < 10) tempMines = (tempHeight - 1) * (tempWidth - 1);
+                                break;
                         }
                     }
                     if (newPadState.Buttons.A == ButtonState.Released && oldPadState.Buttons.A == ButtonState.Pressed)
                     {
-                        if (selectedCustomGameItem == CustomGameMenuItem.Back)
-                        {
-                            gameState = GameState.NewGameMenu;
-                        }
-                        if (selectedCustomGameItem == CustomGameMenuItem.OK)
-                        {
-                            height = tempHeight;
-                            width = tempWidth;
-                            mines = tempMines;
-                            NewGame();
-                            gameState = GameState.NotPlaying;
-                            resumable = true;
-                        }
+                        customGameMenu.ClickItem();
                     }
                     if (newPadState.Buttons.Back == ButtonState.Pressed && oldPadState.Buttons.Back == ButtonState.Released)
                     {
-                        gameState = GameState.NewGameMenu;
+                        Back();
                     }
                     break;
-                case 5:
+                case GameState.OptionsMenu:
                     if (newPadState.DPad.Down == ButtonState.Pressed && oldPadState.DPad.Down == ButtonState.Released)
                     {
-                        if (selectedOptionsItem == OptionsMenuItem.CantSelectRevealedTiles) selectedOptionsItem = OptionsMenuItem.Back;
-                        else selectedOptionsItem = OptionsMenuItem.CantSelectRevealedTiles;
+                        optionsMenu.DownClick();
                     }
                     if (newPadState.DPad.Up == ButtonState.Pressed && oldPadState.DPad.Up == ButtonState.Released)
                     {
-                        if (selectedOptionsItem == OptionsMenuItem.CantSelectRevealedTiles) selectedOptionsItem = OptionsMenuItem.Back;
-                        else selectedOptionsItem = OptionsMenuItem.CantSelectRevealedTiles;
+                        optionsMenu.UpClick();
                     }
                     if (newPadState.Buttons.A == ButtonState.Released && oldPadState.Buttons.A == ButtonState.Pressed)
                     {
-                        if (selectedOptionsItem == OptionsMenuItem.Back)
-                        {
-                            gameState = GameState.Menu;
-                        }
-                        if (selectedOptionsItem == OptionsMenuItem.CantSelectRevealedTiles)
-                        {
-                            if (cantSelectRevealed) cantSelectRevealed = false;
-                            else cantSelectRevealed = true;
-                        }
+                        optionsMenu.ClickItem();
                     }
                     if (newPadState.Buttons.Back == ButtonState.Pressed && oldPadState.Buttons.Back == ButtonState.Released)
                     {
-                        gameState = GameState.Menu;
+                        Back();
+                    }
+                    break;
+                case GameState.BestTimesMenu:
+                    if (newPadState.DPad.Down == ButtonState.Pressed && oldPadState.DPad.Down == ButtonState.Released)
+                    {
+                        bestTimesMenu.DownClick();
+                    }
+                    if (newPadState.DPad.Up == ButtonState.Pressed && oldPadState.DPad.Up == ButtonState.Released)
+                    {
+                        bestTimesMenu.UpClick();
+                    }
+                    if (newPadState.Buttons.A == ButtonState.Released && oldPadState.Buttons.A == ButtonState.Pressed)
+                    {
+                        bestTimesMenu.ClickItem();
+                    }
+                    if (newPadState.Buttons.Back == ButtonState.Pressed && oldPadState.Buttons.Back == ButtonState.Released)
+                    {
+                        Back();
                     }
                     break;
             }
@@ -671,45 +655,54 @@ namespace Minesweeper
             graphics.GraphicsDevice.Clear(Color.Silver);
 
             // TODO: Add your drawing code here
-            if (gameState == GameState.Lost | gameState == GameState.Won | gameState == GameState.Playing | gameState == GameState.NotPlaying)
+            spriteBatch.Begin();
+            switch (gameState)
             {
-                spriteBatch.Begin();
-                DrawFieldBorder(spriteBatch);
-                DrawField(spriteBatch);
-                DrawBackground(spriteBatch);
-                DrawNumbers(spriteBatch, flags, 16, 16);
-                DrawNumbers(spriteBatch, time, 185, 16);
-                DrawFace(spriteBatch);
-                DrawTileSelect(spriteBatch);
-                spriteBatch.End();
+                case GameState.Lost:
+                case GameState.Won:
+                case GameState.Playing: 
+                case GameState.NotPlaying:
+                    DrawFieldBorder(spriteBatch);
+                    DrawField(spriteBatch);
+                    DrawBackground(spriteBatch);
+                    DrawNumbers(spriteBatch, flags, 16, 16);
+                    DrawNumbers(spriteBatch, time, 185, 16);
+                    DrawFace(spriteBatch);
+                    DrawTileSelect(spriteBatch);
+                    break;
+                case GameState.Menu:
+                    mainMenu.Draw(spriteBatch);
+                    break;
+                case GameState.NewGameMenu:
+                    newGameMenu.Draw(spriteBatch);
+                    break;
+                case GameState.CustomGameMenu:
+                    customGameMenu.Draw(spriteBatch);
+                    spriteBatch.Draw(numBox, new Vector2(169, 83), Color.White);
+                    DrawNumbers(spriteBatch, tempHeight, 170, 84);
+                    spriteBatch.Draw(numBox, new Vector2(169, 123), Color.White);
+                    DrawNumbers(spriteBatch, tempWidth, 170, 124);
+                    spriteBatch.Draw(numBox, new Vector2(169, 163), Color.White);
+                    DrawNumbers(spriteBatch, tempMines, 170, 164);
+                    if (tempHeight > 9) spriteBatch.Draw(leftArrow, new Vector2(156, 85), Color.White);
+                    if (tempHeight < 24) spriteBatch.Draw(rightArrow, new Vector2(212, 85), Color.White);
+                    if (tempWidth > 9) spriteBatch.Draw(leftArrow, new Vector2(156, 125), Color.White);
+                    if (tempWidth < 30) spriteBatch.Draw(rightArrow, new Vector2(212, 125), Color.White);
+                    if (tempMines > 10) spriteBatch.Draw(leftArrow, new Vector2(156, 165), Color.White);
+                    if (tempMines < (tempHeight - 1) * (tempWidth - 1)) spriteBatch.Draw(rightArrow, new Vector2(212, 165), Color.White);
+                    break;
+                case GameState.OptionsMenu:
+                    optionsMenu.Draw(spriteBatch);
+                    break;
+                case GameState.BestTimesMenu:
+                    bestTimesMenu.Draw(spriteBatch);
+                    spriteBatch.DrawString(font, bestBeginner.ToString(), new Vector2(180, 72), Color.Black);
+                    spriteBatch.DrawString(font, bestIntermediate.ToString(), new Vector2(180, 112), Color.Black);
+                    spriteBatch.DrawString(font, bestExpert.ToString(), new Vector2(180, 152), Color.Black);
+                    spriteBatch.DrawString(font, bestZune.ToString(), new Vector2(180, 192), Color.Black);
+                    break;
             }
-            if (gameState == GameState.Menu)
-            {
-                spriteBatch.Begin();
-                DrawMenu(spriteBatch);
-                spriteBatch.End();
-            }
-            if (gameState == GameState.NewGameMenu)
-            {
-                spriteBatch.Begin();
-                DrawNewGameMenu(spriteBatch);
-                spriteBatch.End();
-            }
-            if (gameState == GameState.CustomGameMenu)
-            {
-                spriteBatch.Begin();
-                DrawCustomGameMenu(spriteBatch);
-                DrawNumbers(spriteBatch, tempHeight, 183, 82);
-                DrawNumbers(spriteBatch, tempWidth, 183, 122);
-                DrawNumbers(spriteBatch, tempMines, 183, 162);
-                spriteBatch.End();
-            }
-            if (gameState == GameState.OptionsMenu)
-            {
-                spriteBatch.Begin();
-                DrawOptionsMenu(spriteBatch);
-                spriteBatch.End();
-            }
+            spriteBatch.End();
 
             base.Draw(gameTime);
         }
@@ -806,78 +799,6 @@ namespace Minesweeper
             }
         }
 
-        protected void DrawMenu(SpriteBatch batch)
-        {
-            batch.Draw(mTop, new Rectangle(0, 0, 240, 72), Color.White);
-            if (resumable) batch.Draw(mResume, new Rectangle(16, 80, 208, 32), Color.White);
-            else batch.Draw(mResumeGray, new Rectangle(16, 80, 208, 32), Color.White);
-            batch.Draw(mNewGame, new Rectangle(16, 120, 208, 32), Color.White);
-            batch.Draw(mMusic, new Rectangle(16, 160, 208, 32), Color.White);
-            batch.Draw(mBestTimes, new Rectangle(16, 200, 208, 32), Color.White);
-            batch.Draw(mOptions, new Rectangle(16, 240, 208, 32), Color.White);
-            batch.Draw(mExit, new Rectangle(16, 280, 208, 32), Color.White);
-            int selectY;
-            if (selectedMenuItem == MenuItem.Resume) selectY = 78;
-            else
-                if (selectedMenuItem == MenuItem.NewGame) selectY = 118;
-                else
-                    if (selectedMenuItem == MenuItem.Music) selectY = 158;
-                    else
-                        if (selectedMenuItem == MenuItem.BestTimes) selectY = 198;
-                        else
-                            if (selectedMenuItem == MenuItem.Options) selectY = 238;
-                            else selectY = 278;
-            batch.Draw(mSelect, new Rectangle(14, selectY, 212, 36), Color.White);
-        }
-
-        protected void DrawNewGameMenu(SpriteBatch batch)
-        {
-            batch.Draw(newGameMenu, new Rectangle(0, 0, 240, 320), Color.White);
-            int selectY;
-            if (selectedNewGameItem == NewGameMenuItem.Beginner) selectY = 78;
-            else
-                if (selectedNewGameItem == NewGameMenuItem.Intermediate) selectY = 118;
-                else
-                    if (selectedNewGameItem == NewGameMenuItem.Expert) selectY = 158;
-                    else
-                        if (selectedNewGameItem == NewGameMenuItem.Zune) selectY = 198;
-                        else
-                            if (selectedNewGameItem == NewGameMenuItem.Custom) selectY = 238;
-                            else selectY = 278;
-            batch.Draw(mSelect, new Rectangle(14, selectY, 212, 36), Color.White);
-        }
-
-        protected void DrawCustomGameMenu(SpriteBatch batch)
-        {
-            batch.Draw(customGameMenu, new Rectangle(0, 0, 240, 320), Color.White); // 183 82
-            if (selectedCustomGameItem == CustomGameMenuItem.Height)
-            {
-                if (tempHeight > 9) batch.Draw(leftArrow, new Rectangle(175, 83, 6, 21), Color.White);
-                if (tempHeight < 24) batch.Draw(rightArrow, new Rectangle(224, 83, 6, 21), Color.White);
-            }
-            if (selectedCustomGameItem == CustomGameMenuItem.Width)
-            {
-                if (tempWidth > 9) batch.Draw(leftArrow, new Rectangle(175, 123, 6, 21), Color.White);
-                if (tempWidth < 30) batch.Draw(rightArrow, new Rectangle(224, 123, 6, 21), Color.White);
-            }
-            if (selectedCustomGameItem == CustomGameMenuItem.Mines)
-            {
-                if (tempMines > 10) batch.Draw(leftArrow, new Rectangle(175, 163, 6, 21), Color.White);
-                if (tempMines < (tempHeight - 1) * (tempWidth - 1)) batch.Draw(rightArrow, new Rectangle(224, 163, 6, 21), Color.White);
-            }
-            if (selectedCustomGameItem == CustomGameMenuItem.OK) batch.Draw(mSelect, new Rectangle(14, 238, 212, 36), Color.White);
-            if (selectedCustomGameItem == CustomGameMenuItem.Back) batch.Draw(mSelect, new Rectangle(14, 278, 212, 36), Color.White);
-        }
-
-        protected void DrawOptionsMenu(SpriteBatch batch)
-        {
-            batch.Draw(optionsMenu, new Rectangle(0, 0, 240, 320), Color.White);
-            if (cantSelectRevealed) batch.Draw(oCantSelectRevealed, new Rectangle(16, 80, 208, 32), Color.White);
-            else batch.Draw(oCanSelectRevealed, new Rectangle(16, 80, 208, 32), Color.White);
-            if (selectedOptionsItem == OptionsMenuItem.CantSelectRevealedTiles) batch.Draw(mSelect, new Rectangle(14, 78, 212, 36), Color.White);
-            else batch.Draw(mSelect, new Rectangle(14, 278, 212, 36), Color.White);
-        }
-
         protected void TileClick()
         {
             if (gameState != GameState.Playing) gameState = GameState.Playing;
@@ -961,6 +882,26 @@ namespace Minesweeper
                     flags = 0;
                     faceValue = Face.Win;
                     faceSelected = true;
+                    if (height == 9 & width == 9 & mines == 10 & time < bestBeginner)
+                    {
+                        bestBeginner = time;
+                        UpdateBestTime(Difficulty.Beginner);
+                    }
+                    if (height == 16 & width == 16 & mines == 40 & time < bestIntermediate)
+                    {
+                        bestIntermediate = time;
+                        UpdateBestTime(Difficulty.Intermediate);
+                    }
+                    if (height == 24 & width == 30 & mines == 99 & time < bestExpert)
+                    {
+                        bestExpert = time;
+                        UpdateBestTime(Difficulty.Expert);
+                    }
+                    if (height == 15 & width == 14 & mines == 30 & time < bestZune)
+                    {
+                        bestZune = time;
+                        UpdateBestTime(Difficulty.Zune);
+                    }
                     break;
                 case 2: //Game over
                     gameState = GameState.Lost;
@@ -996,7 +937,7 @@ namespace Minesweeper
             }
         }
 
-        protected void NewGame()
+        protected void SetGame()
         {
             mGame = new MinesweeperGame(height, width, mines);
             flags = mines;
@@ -1008,6 +949,223 @@ namespace Minesweeper
             selectedTile[1] = 0;
             corner[0] = 0;
             corner[1] = 0;
+            gameState = GameState.NotPlaying;
+            resumable = true;
+        }
+
+        protected void Resume()
+        {
+            gameState = oldGameState;
+        }
+
+        protected void NewGameClick()
+        {
+            gameState = GameState.NewGameMenu;
+        }
+
+        protected void OptionsClick()
+        {
+            gameState = GameState.OptionsMenu;
+            oldCantSelectRevealed = cantSelectRevealed;
+            oldFlagWithPlay = flagWithPlay;
+        }
+
+        protected void BestTimesClick()
+        {
+            gameState = GameState.BestTimesMenu;
+        }
+
+        protected void BeginnerClick()
+        {
+            height = 9;
+            width = 9;
+            mines = 10;
+            SetGame();
+        }
+
+        protected void IntermediateClick()
+        {
+            height = 16;
+            width = 16;
+            mines = 40;
+            SetGame();
+        }
+
+        protected void ExpertClick()
+        {
+            height = 24;
+            width = 30;
+            mines = 99;
+            SetGame();
+        }
+
+        protected void ZuneClick()
+        {
+            height = 15;
+            width = 14;
+            mines = 30;
+            SetGame();
+        }
+
+        protected void CustomClick()
+        {
+            gameState = GameState.CustomGameMenu;
+            tempHeight = height;
+            tempWidth = width;
+            tempMines = mines;
+        }
+
+        protected void Back()
+        {
+            switch (gameState)
+            {
+                case GameState.NewGameMenu:
+                    gameState = GameState.Menu;
+                    break;
+                case GameState.CustomGameMenu:
+                    gameState = GameState.NewGameMenu;
+                    break;
+                case GameState.OptionsMenu:
+                    if (oldCantSelectRevealed != cantSelectRevealed || oldFlagWithPlay != flagWithPlay) SetOptions();
+                    gameState = GameState.Menu;
+                    break;
+                case GameState.BestTimesMenu:
+                    gameState = GameState.Menu;
+                    break;
+            }
+        }
+
+        protected void CantSelectRevealedClick()
+        {
+            cantSelectRevealed = !cantSelectRevealed;
+        }
+
+        protected void FlagButtonClick()
+        {
+            flagWithPlay = !flagWithPlay;
+        }
+
+        protected void OKClick()
+        {
+            height = tempHeight;
+            width = tempWidth;
+            mines = tempMines;
+            SetGame();
+        }
+
+        protected void ResetClick()
+        {
+            bestBeginner = 999;
+            UpdateBestTime(Difficulty.Beginner);
+            bestIntermediate = 999;
+            UpdateBestTime(Difficulty.Intermediate);
+            bestExpert = 999;
+            UpdateBestTime(Difficulty.Expert);
+            bestZune = 999;
+            UpdateBestTime(Difficulty.Zune);
+        }
+
+        protected void DoNothing()
+        {
+
+        }
+
+        protected void GetBestTimes()
+        {
+            string beginnerPath = Path.Combine(container.Path, "beginnertime.dat");
+            string intermediatePath = Path.Combine(container.Path, "intermediatetime.dat");
+            string expertPath = Path.Combine(container.Path, "experttime.dat");
+            string zunePath = Path.Combine(container.Path, "zunetime.dat");
+
+            BinaryReader dataFile;
+            
+            if (File.Exists(beginnerPath))
+            {
+                dataFile = new BinaryReader(new FileStream(beginnerPath, FileMode.Open));
+                bestBeginner = dataFile.ReadInt32();
+                dataFile.Close();
+            }
+            else UpdateBestTime(Difficulty.Beginner);
+            
+            if (File.Exists(intermediatePath))
+            {
+                dataFile = new BinaryReader(new FileStream(intermediatePath, FileMode.Open));
+                bestIntermediate = dataFile.ReadInt32();
+                dataFile.Close();
+            }
+            else UpdateBestTime(Difficulty.Intermediate);
+            
+            if (File.Exists(expertPath))
+            {
+                dataFile = new BinaryReader(new FileStream(expertPath, FileMode.Open));
+                bestExpert = dataFile.ReadInt32();
+                dataFile.Close();
+            }
+            else UpdateBestTime(Difficulty.Expert);
+            
+            if (File.Exists(zunePath))
+            {
+                dataFile = new BinaryReader(new FileStream(zunePath, FileMode.Open));
+                bestZune = dataFile.ReadInt32();
+                dataFile.Close();
+            }
+            else UpdateBestTime(Difficulty.Zune);
+        }
+
+        protected void UpdateBestTime(Difficulty difficulty)
+        {
+            string beginnerPath = Path.Combine(container.Path, "beginnertime.dat");
+            string intermediatePath = Path.Combine(container.Path, "intermediatetime.dat");
+            string expertPath = Path.Combine(container.Path, "experttime.dat");
+            string zunePath = Path.Combine(container.Path, "zunetime.dat");
+
+            BinaryWriter dataFile;
+            switch (difficulty)
+            {
+                case Difficulty.Beginner:
+                    dataFile = new BinaryWriter(new FileStream(beginnerPath, FileMode.Create));
+                    dataFile.Write(bestBeginner);
+                    dataFile.Close();
+                    break;
+                case Difficulty.Intermediate:
+                    dataFile = new BinaryWriter(new FileStream(intermediatePath, FileMode.Create));
+                    dataFile.Write(bestIntermediate);
+                    dataFile.Close();
+                    break;
+                case Difficulty.Expert:
+                    dataFile = new BinaryWriter(new FileStream(expertPath, FileMode.Create));
+                    dataFile.Write(bestExpert);
+                    dataFile.Close();
+                    break;
+                case Difficulty.Zune:
+                    dataFile = new BinaryWriter(new FileStream(zunePath, FileMode.Create));
+                    dataFile.Write(bestZune);
+                    dataFile.Close();
+                    break;
+            }
+            //container.Dispose();
+        }
+
+        protected void GetOptions()
+        {
+            if (File.Exists(Path.Combine(container.Path, "options.dat")))
+            {
+                BinaryReader dataFile;
+                dataFile = new BinaryReader(new FileStream(Path.Combine(container.Path, "options.dat"), FileMode.Open));
+                cantSelectRevealed = dataFile.ReadBoolean();
+                flagWithPlay = dataFile.ReadBoolean();
+                dataFile.Close();
+            }
+            else SetOptions();
+        }
+
+        protected void SetOptions()
+        {
+            BinaryWriter dataFile;
+            dataFile = new BinaryWriter(new FileStream(Path.Combine(container.Path, "options.dat"), FileMode.Create));
+            dataFile.Write(cantSelectRevealed);
+            dataFile.Write(flagWithPlay);
+            dataFile.Close();
         }
     }
 }

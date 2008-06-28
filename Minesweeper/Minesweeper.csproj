@@ -55,6 +55,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ItemClick.cs" />
+    <Compile Include="Menu.cs" />
+    <Compile Include="MenuItem.cs" />
     <Compile Include="MinesweeperGame.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
