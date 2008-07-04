@@ -7,7 +7,6 @@ public class Tile
     protected bool mineHere = false;
     protected bool hidden = true;
     protected bool flagged = false;
-    protected bool updated = false;
 
     public string FieldValue
     {
@@ -67,31 +66,17 @@ public class Tile
         }
     }
 
-    public bool Updated
-    {
-        get
-        {
-            return updated;
-        }
-        set
-        {
-            updated = value;
-        }
-    }
-
     public void Reveal()
     {
         if (!(Flagged))
         {
             hidden = false;
-            updated = true;
         }
     }
 
     public void Hide()
     {
         hidden = true;
-        updated = true;
     }
 
     public void Flag()
@@ -99,7 +84,6 @@ public class Tile
         if (Hidden)
         {
             flagged = true;
-            updated = true;
         }
 
     }
@@ -107,6 +91,5 @@ public class Tile
     public void Unflag()
     {
         flagged = false;
-        updated = true;
     }
 }

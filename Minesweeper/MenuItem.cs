@@ -13,26 +13,29 @@ namespace Minesweeper
     class MenuItem
     {
         public string text;
-        public SpriteFont font;
         public bool selectable = true;
-        public bool color = true; //true = black, false = gray
+        public bool colored = true; //true = black, false = gray
         public bool smallFont = false;
 
-        public MenuItem(string text, SpriteFont font)
+        public MenuItem(string text)
         {
             this.text = text;
-            this.font = font;
         }
 
-        public MenuItem(string text, bool selectable, SpriteFont font) : this(text, selectable, selectable, font)
+        public MenuItem(string text, bool selectable) : this(text, selectable, selectable)
         {
             
         }
 
-        public MenuItem(string text, bool selectable, bool color, SpriteFont font) : this(text, font)
+        public MenuItem(string text, bool selectable, bool colored) : this(text)
         {
             this.selectable = selectable;
-            this.color = color;
+            this.colored = colored;
+        }
+
+        public MenuItem(string text, bool selectable, bool colored, bool smallFont) : this(text, selectable, colored)
+        {
+            this.smallFont = smallFont;
         }
 
         public event ItemClick itemClicked;

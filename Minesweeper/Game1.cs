@@ -22,53 +22,34 @@ namespace Minesweeper
         MinesweeperGame mGame;
         StorageDevice storageDevice;
         StorageContainer container;
+        MenuComponent menuComponent;
+        Skin s;
+        public List<Skin> skins;
+        public Texture2D blank;
 
-        protected Texture2D top;
-        protected Texture2D[] numbers = new Texture2D[12];
-        protected Texture2D fHappy, fWin, fDead, fScared;
-        protected Texture2D faceSelect;
-        protected Texture2D borderTL, borderT, borderTR, borderR, borderBR, borderB, borderBL, borderL;
-        protected Texture2D[] t = new Texture2D[9];
-        protected Texture2D tHidden, tFlag, tMine, tNotMine, tClickedMine;
-        protected Texture2D select;
-        protected Texture2D mTop, mSelect;
-        protected Texture2D numBox, rightArrow, leftArrow;
-        protected SpriteFont font, header, small;
+        public int height;
+        public int width;
+        public int mines;
+        public bool cantSelectRevealed;
+        public bool flagWithPlay;
+        public int bestBeginner, bestIntermediate, bestExpert, bestZune;
+        public int selectedSkin;
 
-        protected int height;
-        protected int width;
-        protected int mines;
-        protected bool cantSelectRevealed;
-        protected bool flagWithPlay;
-        protected bool oldCantSelectRevealed, oldFlagWithPlay;
-        protected int tempHeight, tempWidth, tempMines;
-        protected int bestBeginner, bestIntermediate, bestExpert, bestZune;
-
-        protected int flags;
-        protected int time;
-        protected double totalTime;
-        protected int[] selectedTile = new int[2]; //tile in column selectedTile[0] of row selectedTile[1]
-        protected int[] selectedMine = new int[2];
-        protected int[] corner = new int[2];
-        protected enum Face { Happy, Win, Dead, Scared };
-        protected Face faceValue;
-        protected GamePadState newPadState;
-        protected enum GameState { NotPlaying, Playing, Won, Lost, Menu, NewGameMenu, CustomGameMenu, OptionsMenu, BestTimesMenu };
-        protected GameState gameState;
-        protected GameState oldGameState;
-        protected enum Difficulty { Beginner, Intermediate, Expert, Zune }
-        protected bool faceSelected;
-        protected bool resumable;
-        Menu mainMenu;
-        MenuItem resume, newGame, music, bestTimes, options, exit;
-        Menu newGameMenu;
-        MenuItem beginner, intermediate, expert, zune, custom, back;
-        Menu optionsMenu;
-        MenuItem cantSelectRevealedMI, flagButton;
-        Menu customGameMenu;
-        MenuItem heightMI, widthMI, minesMI, ok;
-        Menu bestTimesMenu;
-        MenuItem bestBeginnerMI, bestIntermediateMI, bestExpertMI, bestZuneMI, resetMI;
+        int flags;
+        int time;
+        double totalTime;
+        int[] selectedTile = new int[2]; //tile in column selectedTile[0] of row selectedTile[1]
+        int[] selectedMine = new int[2];
+        int[] corner = new int[2];
+        enum Face { Happy, Win, Dead, Scared };
+        Face faceValue;
+        GamePadState newPadState;
+        public enum GameState { NotPlaying, Playing, Won, Lost, Menu };
+        public GameState gameState;
+        public GameState oldGameState;
+        bool faceSelected;
+        public bool resumable;
+        
 
         public Game1()
         {
@@ -101,14 +82,9 @@ namespace Minesweeper
             height = 9;
             width = 9;
             mines = 10;
-            if (height > 24) height = 24;
-            if (height < 9) height = 9;
-            if (width > 30) width = 30;
-            if (width < 9) width = 9;
-            if (mines > (height - 1) * (width - 1)) mines = (height - 1) * (width - 1);
-            if (mines < 10) mines = 10;
             cantSelectRevealed = true;
             flagWithPlay = true;
+            selectedSkin = 0;
             flags = mines;
             gameState = GameState.Menu;
             oldGameState = GameState.NotPlaying;
@@ -122,6 +98,7 @@ namespace Minesweeper
             mGame = new MinesweeperGame(height, width, mines);
             totalTime = 0.0;
             resumable = false;
+            skins = new List<Skin>();
 
             GetOptions();
             
@@ -138,46 +115,12 @@ namespace Minesweeper
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
-            top = Content.Load<Texture2D>(@"top");
-            for (int counter = 0; counter < 10; counter++)
-            {
-                numbers[counter] = Content.Load<Texture2D>(@"Numbers/" + counter);
-            }
-            numbers[10] = Content.Load<Texture2D>(@"Numbers/-");
-            numbers[11] = Content.Load<Texture2D>(@"Numbers/_");
-            fHappy = Content.Load<Texture2D>(@"Faces/happy");
-            fWin = Content.Load<Texture2D>(@"Faces/win");
-            fDead = Content.Load<Texture2D>(@"Faces/dead");
-            fScared = Content.Load<Texture2D>(@"Faces/scared");
-            faceSelect = Content.Load<Texture2D>(@"faceselect");
-            borderB = Content.Load<Texture2D>(@"Borders/B");
-            borderBL = Content.Load<Texture2D>(@"Borders/BL");
-            borderBR = Content.Load<Texture2D>(@"Borders/BR");
-            borderL = Content.Load<Texture2D>(@"Borders/L");
-            borderR = Content.Load<Texture2D>(@"Borders/R");
-            borderT = Content.Load<Texture2D>(@"Borders/T");
-            borderTL = Content.Load<Texture2D>(@"Borders/TL");
-            borderTR = Content.Load<Texture2D>(@"Borders/TR");
-            for (int counter = 0; counter < 9; counter++)
-            {
-                t[counter] = Content.Load<Texture2D>(@"Tiles/" + counter);
-            }
-            tHidden = Content.Load<Texture2D>(@"Tiles/hidden");
-            tFlag = Content.Load<Texture2D>(@"Tiles/flag");
-            tMine = Content.Load<Texture2D>(@"Tiles/bomb");
-            tNotMine = Content.Load<Texture2D>(@"Tiles/notbomb");
-            tClickedMine = Content.Load<Texture2D>(@"Tiles/clickedbomb");
-            select = Content.Load<Texture2D>(@"select");
-            mTop = Content.Load<Texture2D>(@"Menu/top");
-            mSelect = Content.Load<Texture2D>(@"Menu/select");
-            numBox = Content.Load<Texture2D>(@"Menu/number back");
-            rightArrow = Content.Load<Texture2D>(@"Menu/right arrow");
-            leftArrow = Content.Load<Texture2D>(@"Menu/left arrow");
-            font = Content.Load<SpriteFont>(@"fonts/normal");
-            header = Content.Load<SpriteFont>(@"fonts/header");
-            small = Content.Load<SpriteFont>(@"fonts/small");
-
-            InitializeMenus();
+            blank = Content.Load<Texture2D>("blank");
+            skins.Add(new Skin("Classic", "Microsoft", Content, Color.Silver, Color.Black, Color.Gray, false, false));
+            skins.Add(new Skin("Blue", "B.J. Miller", Content, new Color(98, 138, 192), new Color(34, 55, 85), new Color(137, 177, 231), true, true));
+            skins.Add(new Skin("Black", "wizard7926", Content, Color.Black, Color.White, Color.Gray, false, false));
+            if (selectedSkin > skins.Count - 1) selectedSkin = 0;
+            s = skins[selectedSkin];
         }
 
         /// <summary>
@@ -189,87 +132,12 @@ namespace Minesweeper
             // TODO: Unload any non ContentManager content here
         }
 
-        protected void InitializeMenus()
+        protected override void BeginRun()
         {
-            mainMenu = new Menu(mTop, mSelect);
-            resume = new MenuItem("Resume", resumable, font);
-            resume.itemClicked += new ItemClick(Resume);
-            mainMenu.Add(0, ref resume);
-            newGame = new MenuItem("New Game", font);
-            newGame.itemClicked += new ItemClick(NewGameClick);
-            mainMenu.Add(1, ref newGame);
-            music = new MenuItem("Music", false, font);
-            music.itemClicked += new ItemClick(DoNothing);
-            mainMenu.Add(2, ref music);
-            bestTimes = new MenuItem("Best Times", font);
-            bestTimes.itemClicked += new ItemClick(BestTimesClick);
-            mainMenu.Add(3, ref bestTimes);
-            options = new MenuItem("Options", font);
-            options.itemClicked +=new ItemClick(OptionsClick);
-            mainMenu.Add(4, ref options);
-            exit = new MenuItem("Exit", font);
-            exit.itemClicked += new ItemClick(Exit);
-            mainMenu.Add(5, ref exit);
-
-            newGameMenu = new Menu("New Game:", header, mSelect);
-            beginner = new MenuItem("Beginner", font);
-            beginner.itemClicked += new ItemClick(BeginnerClick);
-            newGameMenu.Add(0, ref beginner);
-            intermediate = new MenuItem("Intermediate", font);
-            intermediate.itemClicked += new ItemClick(IntermediateClick);
-            newGameMenu.Add(1, ref intermediate);
-            expert = new MenuItem("Expert", font);
-            expert.itemClicked += new ItemClick(ExpertClick);
-            newGameMenu.Add(2, ref expert);
-            zune = new MenuItem("Zune Fit", font);
-            zune.itemClicked += new ItemClick(ZuneClick);
-            newGameMenu.Add(3, ref zune);
-            custom = new MenuItem("Custom", font);
-            custom.itemClicked += new ItemClick(CustomClick);
-            newGameMenu.Add(4, ref custom);
-            back = new MenuItem("Back", font);
-            back.itemClicked += new ItemClick(Back);
-            newGameMenu.Add(5, ref back);
-
-            optionsMenu = new Menu("Options:", header, mSelect);
-            cantSelectRevealedMI = new MenuItem("Revealed tiles can't be selected", small);
-            cantSelectRevealedMI.smallFont = true;
-            cantSelectRevealedMI.itemClicked += new ItemClick(CantSelectRevealedClick);
-            optionsMenu.Add(0, ref cantSelectRevealedMI);
-            flagButton = new MenuItem("Flag tiles with Play button", small);
-            flagButton.smallFont = true;
-            flagButton.itemClicked += new ItemClick(FlagButtonClick);
-            optionsMenu.Add(1, ref flagButton);
-            optionsMenu.Add(5, ref back);
-
-            customGameMenu = new Menu("Custom Game:", header, mSelect);
-            heightMI = new MenuItem("Height", font);
-            heightMI.itemClicked += new ItemClick(DoNothing);
-            customGameMenu.Add(0, ref heightMI);
-            widthMI = new MenuItem("Width", font);
-            widthMI.itemClicked += new ItemClick(DoNothing);
-            customGameMenu.Add(1, ref widthMI);
-            minesMI = new MenuItem("Mines", font);
-            minesMI.itemClicked += new ItemClick(DoNothing);
-            customGameMenu.Add(2, ref minesMI);
-            ok = new MenuItem("OK", font);
-            ok.itemClicked += new ItemClick(OKClick);
-            customGameMenu.Add(4, ref ok);
-            customGameMenu.Add(5, ref back);
-
-            bestTimesMenu = new Menu("Best Times:", header, mSelect);
-            bestBeginnerMI = new MenuItem("Beginner:", false, true, font);
-            bestTimesMenu.Add(0, ref bestBeginnerMI);
-            bestIntermediateMI = new MenuItem("Intermed.:", false, true, font);
-            bestTimesMenu.Add(1, ref bestIntermediateMI);
-            bestExpertMI = new MenuItem("Expert:", false, true, font);
-            bestTimesMenu.Add(2, ref bestExpertMI);
-            bestZuneMI = new MenuItem("Zune Fit:", false, true, font);
-            bestTimesMenu.Add(3, ref bestZuneMI);
-            resetMI = new MenuItem("Reset Times", font);
-            resetMI.itemClicked += new ItemClick(ResetClick);
-            bestTimesMenu.Add(4, ref resetMI);
-            bestTimesMenu.Add(5, ref back);
+            menuComponent = new MenuComponent(this, ref s);
+            this.Components.Add(menuComponent);
+            menuComponent.Enabled = false;
+            menuComponent.Visible = false;
         }
 
         /// <summary>
@@ -291,13 +159,13 @@ namespace Minesweeper
             }
             if (time > 999) time = 999;
 
-            resume.selectable = resumable;
-            resume.color = resumable;
-            cantSelectRevealedMI.text = cantSelectRevealed ? "Revealed tiles can't be selected" : "Revealed tiles can be selected";
-            flagButton.text = flagWithPlay ? "Flag tiles with Play button" : "Flag tiles with Center button";
-
             GamePadState oldPadState = newPadState;
             newPadState = GamePad.GetState(PlayerIndex.One);
+
+            s = skins[selectedSkin];
+            menuComponent.Enabled = gameState == GameState.Menu;
+            menuComponent.Visible = gameState == GameState.Menu;
+            menuComponent.s = this.s;
 
             switch (gameState)
             {
@@ -451,7 +319,7 @@ namespace Minesweeper
                     }
                     if (newPadState.Buttons.A == ButtonState.Released && oldPadState.Buttons.A == ButtonState.Pressed)
                     {
-                        if (faceSelected) SetGame();
+                        if (faceSelected) SetGame(height, width, mines);
                         else
                             if (flagWithPlay) TileClick();
                             else TileFlag();
@@ -466,10 +334,11 @@ namespace Minesweeper
                             if (flagWithPlay) TileFlag();
                             else TileClick();
                     }
-                    if (newPadState.Buttons.Back == ButtonState.Pressed && oldPadState.Buttons.Back == ButtonState.Released)
+                    if (newPadState.Buttons.Back == ButtonState.Released && oldPadState.Buttons.Back == ButtonState.Pressed)
                     {
                         oldGameState = gameState;
                         gameState = GameState.Menu;
+                        menuComponent.menuState = Menus.Main;
                     }
                     if (height > 15)
                     {
@@ -508,138 +377,13 @@ namespace Minesweeper
                 case GameState.Won:
                     if (newPadState.Buttons.A == ButtonState.Pressed && oldPadState.Buttons.A == ButtonState.Released && faceSelected)
                     {
-                        SetGame();
+                        SetGame(height, width, mines);
                     }
-                    if (newPadState.Buttons.Back == ButtonState.Pressed && oldPadState.Buttons.Back == ButtonState.Released)
+                    if (newPadState.Buttons.Back == ButtonState.Released && oldPadState.Buttons.Back == ButtonState.Pressed)
                     {
                         oldGameState = gameState;
                         gameState = GameState.Menu;
-                    }
-                    break;
-                case GameState.Menu:
-                    if (newPadState.DPad.Down == ButtonState.Pressed && oldPadState.DPad.Down == ButtonState.Released)
-                    {
-                        mainMenu.DownClick();
-                    }
-                    if (newPadState.DPad.Up == ButtonState.Pressed && oldPadState.DPad.Up == ButtonState.Released)
-                    {
-                        mainMenu.UpClick();
-                    }
-                    if (newPadState.Buttons.A == ButtonState.Released && oldPadState.Buttons.A == ButtonState.Pressed)
-                    {
-                        mainMenu.ClickItem();
-                    }
-                    if (newPadState.Buttons.Back == ButtonState.Pressed && oldPadState.Buttons.Back == ButtonState.Released)
-                    {
-                        if (resumable) gameState = oldGameState;
-                    }
-                    break;
-                case GameState.NewGameMenu:
-                    if (newPadState.DPad.Down == ButtonState.Pressed && oldPadState.DPad.Down == ButtonState.Released)
-                    {
-                        newGameMenu.DownClick();
-                    }
-                    if (newPadState.DPad.Up == ButtonState.Pressed && oldPadState.DPad.Up == ButtonState.Released)
-                    {
-                        newGameMenu.UpClick();
-                    }
-                    if (newPadState.Buttons.A == ButtonState.Released && oldPadState.Buttons.A == ButtonState.Pressed)
-                    {
-                        newGameMenu.ClickItem();
-                    }
-                    if (newPadState.Buttons.Back == ButtonState.Pressed && oldPadState.Buttons.Back == ButtonState.Released)
-                    {
-                        Back();
-                    }
-                    break;
-                case GameState.CustomGameMenu:
-                    if (newPadState.DPad.Down == ButtonState.Pressed && oldPadState.DPad.Down == ButtonState.Released)
-                    {
-                        customGameMenu.DownClick();
-                    }
-                    if (newPadState.DPad.Up == ButtonState.Pressed && oldPadState.DPad.Up == ButtonState.Released)
-                    {
-                        customGameMenu.UpClick();
-                    }
-                    if (newPadState.DPad.Right == ButtonState.Pressed && oldPadState.DPad.Right == ButtonState.Released)
-                    {
-                        switch (customGameMenu.selectedItem)
-                        {
-                            case 0:
-                                tempHeight++;
-                                if (tempHeight > 24) tempHeight = 9;
-                                break;
-                            case 1:
-                                tempWidth++;
-                                if (tempWidth > 30) tempWidth = 9;
-                                break;
-                            case 2:
-                                tempMines++;
-                                if (tempMines > (tempHeight - 1) * (tempWidth - 1)) tempMines = 10;
-                                break;
-                        }
-                    }
-                    if (newPadState.DPad.Left == ButtonState.Pressed && oldPadState.DPad.Left == ButtonState.Released)
-                    {
-                        switch (customGameMenu.selectedItem)
-                        {
-                            case 0:
-                                tempHeight--;
-                                if (tempHeight < 9) tempHeight = 24;
-                                break;
-                            case 1:
-                                tempWidth--;
-                                if (tempWidth < 9) tempWidth = 30;
-                                break;
-                            case 2:
-                                tempMines--;
-                                if (tempMines < 10) tempMines = (tempHeight - 1) * (tempWidth - 1);
-                                break;
-                        }
-                    }
-                    if (newPadState.Buttons.A == ButtonState.Released && oldPadState.Buttons.A == ButtonState.Pressed)
-                    {
-                        customGameMenu.ClickItem();
-                    }
-                    if (newPadState.Buttons.Back == ButtonState.Pressed && oldPadState.Buttons.Back == ButtonState.Released)
-                    {
-                        Back();
-                    }
-                    break;
-                case GameState.OptionsMenu:
-                    if (newPadState.DPad.Down == ButtonState.Pressed && oldPadState.DPad.Down == ButtonState.Released)
-                    {
-                        optionsMenu.DownClick();
-                    }
-                    if (newPadState.DPad.Up == ButtonState.Pressed && oldPadState.DPad.Up == ButtonState.Released)
-                    {
-                        optionsMenu.UpClick();
-                    }
-                    if (newPadState.Buttons.A == ButtonState.Released && oldPadState.Buttons.A == ButtonState.Pressed)
-                    {
-                        optionsMenu.ClickItem();
-                    }
-                    if (newPadState.Buttons.Back == ButtonState.Pressed && oldPadState.Buttons.Back == ButtonState.Released)
-                    {
-                        Back();
-                    }
-                    break;
-                case GameState.BestTimesMenu:
-                    if (newPadState.DPad.Down == ButtonState.Pressed && oldPadState.DPad.Down == ButtonState.Released)
-                    {
-                        bestTimesMenu.DownClick();
-                    }
-                    if (newPadState.DPad.Up == ButtonState.Pressed && oldPadState.DPad.Up == ButtonState.Released)
-                    {
-                        bestTimesMenu.UpClick();
-                    }
-                    if (newPadState.Buttons.A == ButtonState.Released && oldPadState.Buttons.A == ButtonState.Pressed)
-                    {
-                        bestTimesMenu.ClickItem();
-                    }
-                    if (newPadState.Buttons.Back == ButtonState.Pressed && oldPadState.Buttons.Back == ButtonState.Released)
-                    {
-                        Back();
+                        menuComponent.menuState = Menus.Main;
                     }
                     break;
             }
@@ -652,67 +396,31 @@ namespace Minesweeper
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            graphics.GraphicsDevice.Clear(Color.Silver);
+            graphics.GraphicsDevice.Clear(s.background);
 
             // TODO: Add your drawing code here
-            spriteBatch.Begin();
-            switch (gameState)
+            if (gameState != GameState.Menu)
             {
-                case GameState.Lost:
-                case GameState.Won:
-                case GameState.Playing: 
-                case GameState.NotPlaying:
-                    DrawFieldBorder(spriteBatch);
-                    DrawField(spriteBatch);
-                    DrawBackground(spriteBatch);
-                    DrawNumbers(spriteBatch, flags, 16, 16);
-                    DrawNumbers(spriteBatch, time, 185, 16);
-                    DrawFace(spriteBatch);
-                    DrawTileSelect(spriteBatch);
-                    break;
-                case GameState.Menu:
-                    mainMenu.Draw(spriteBatch);
-                    break;
-                case GameState.NewGameMenu:
-                    newGameMenu.Draw(spriteBatch);
-                    break;
-                case GameState.CustomGameMenu:
-                    customGameMenu.Draw(spriteBatch);
-                    spriteBatch.Draw(numBox, new Vector2(169, 83), Color.White);
-                    DrawNumbers(spriteBatch, tempHeight, 170, 84);
-                    spriteBatch.Draw(numBox, new Vector2(169, 123), Color.White);
-                    DrawNumbers(spriteBatch, tempWidth, 170, 124);
-                    spriteBatch.Draw(numBox, new Vector2(169, 163), Color.White);
-                    DrawNumbers(spriteBatch, tempMines, 170, 164);
-                    if (tempHeight > 9) spriteBatch.Draw(leftArrow, new Vector2(156, 85), Color.White);
-                    if (tempHeight < 24) spriteBatch.Draw(rightArrow, new Vector2(212, 85), Color.White);
-                    if (tempWidth > 9) spriteBatch.Draw(leftArrow, new Vector2(156, 125), Color.White);
-                    if (tempWidth < 30) spriteBatch.Draw(rightArrow, new Vector2(212, 125), Color.White);
-                    if (tempMines > 10) spriteBatch.Draw(leftArrow, new Vector2(156, 165), Color.White);
-                    if (tempMines < (tempHeight - 1) * (tempWidth - 1)) spriteBatch.Draw(rightArrow, new Vector2(212, 165), Color.White);
-                    break;
-                case GameState.OptionsMenu:
-                    optionsMenu.Draw(spriteBatch);
-                    break;
-                case GameState.BestTimesMenu:
-                    bestTimesMenu.Draw(spriteBatch);
-                    spriteBatch.DrawString(font, bestBeginner.ToString(), new Vector2(180, 72), Color.Black);
-                    spriteBatch.DrawString(font, bestIntermediate.ToString(), new Vector2(180, 112), Color.Black);
-                    spriteBatch.DrawString(font, bestExpert.ToString(), new Vector2(180, 152), Color.Black);
-                    spriteBatch.DrawString(font, bestZune.ToString(), new Vector2(180, 192), Color.Black);
-                    break;
+                spriteBatch.Begin();
+                DrawFieldBorder(spriteBatch);
+                DrawField(spriteBatch);
+                DrawBackground(spriteBatch);
+                DrawNumbers(spriteBatch, flags, 16, 16);
+                DrawNumbers(spriteBatch, time, 185, 16);
+                DrawFace(spriteBatch);
+                DrawTileSelect(spriteBatch);
+                spriteBatch.End();
             }
-            spriteBatch.End();
 
             base.Draw(gameTime);
         }
 
-        protected void DrawBackground(SpriteBatch batch)
+        void DrawBackground(SpriteBatch batch)
         {
-            batch.Draw(top, new Rectangle(0, 0, 240, 56), Color.White);
+            batch.Draw(s.top, new Rectangle(0, 0, 240, 56), Color.White);
         }
 
-        protected void DrawNumbers(SpriteBatch batch, int amount, int x, int y)
+        public void DrawNumbers(SpriteBatch batch, int amount, int x, int y)
         {
             int[] amountNums = new int[3];
             if (amount >= 0)
@@ -721,9 +429,9 @@ namespace Minesweeper
                 amountNums[0] = (amount - (amount % 100)) / 100;
                 amountNums[1] = ((amount - amountNums[0] * 100) - ((amount - amountNums[0] * 100) % 10)) / 10;
                 amountNums[2] = amount - (amountNums[0] * 100) - (amountNums[1] * 10);
-                batch.Draw(numbers[amountNums[0]], new Rectangle(x, y, 13, 23), Color.White);
-                batch.Draw(numbers[amountNums[1]], new Rectangle(x + 13, y, 13, 23), Color.White);
-                batch.Draw(numbers[amountNums[2]], new Rectangle(x + 26, y, 13, 23), Color.White);
+                batch.Draw(s.numbers[amountNums[0]], new Rectangle(x, y, 13, 23), Color.White);
+                batch.Draw(s.numbers[amountNums[1]], new Rectangle(x + 13, y, 13, 23), Color.White);
+                batch.Draw(s.numbers[amountNums[2]], new Rectangle(x + 26, y, 13, 23), Color.White);
             }
             else
             {
@@ -733,41 +441,41 @@ namespace Minesweeper
                 else amountNums[1] = int.Parse(amountParts[amountParts.GetUpperBound(0) - 1].ToString());
                 amountNums[2] = int.Parse(amountParts[amountParts.GetUpperBound(0)].ToString());
                 if (amount < 0 & amount > -10) amountNums[1] = 0;
-                batch.Draw(numbers[10], new Rectangle(x, y, 13, 23), Color.White);
-                batch.Draw(numbers[amountNums[1]], new Rectangle(x + 13, y, 13, 23), Color.White);
-                batch.Draw(numbers[amountNums[2]], new Rectangle(x + 26, y, 13, 23), Color.White);
+                batch.Draw(s.numbers[10], new Rectangle(x, y, 13, 23), Color.White);
+                batch.Draw(s.numbers[amountNums[1]], new Rectangle(x + 13, y, 13, 23), Color.White);
+                batch.Draw(s.numbers[amountNums[2]], new Rectangle(x + 26, y, 13, 23), Color.White);
             }
         }
 
-        protected void DrawFace(SpriteBatch batch)
+        void DrawFace(SpriteBatch batch)
         {
-            if (faceValue == Face.Happy) batch.Draw(fHappy, new Rectangle(108, 16, 24, 24), Color.White);
+            if (faceValue == Face.Happy) batch.Draw(s.fHappy, new Rectangle(108, 16, 24, 24), Color.White);
             else
-                if (faceValue == Face.Win) batch.Draw(fWin, new Rectangle(108, 16, 24, 24), Color.White);
+                if (faceValue == Face.Win) batch.Draw(s.fWin, new Rectangle(108, 16, 24, 24), Color.White);
                 else
-                    if (faceValue == Face.Dead) batch.Draw(fDead, new Rectangle(108, 16, 24, 24), Color.White);
-                    else batch.Draw(fScared, new Rectangle(108, 16, 24, 24), Color.White);
-            if (faceSelected) batch.Draw(faceSelect, new Rectangle(108, 16, 24, 24), Color.White);
+                    if (faceValue == Face.Dead) batch.Draw(s.fDead, new Rectangle(108, 16, 24, 24), Color.White);
+                    else batch.Draw(s.fScared, new Rectangle(108, 16, 24, 24), Color.White);
+            if (faceSelected) batch.Draw(s.faceSelect, new Rectangle(108, 16, 24, 24), Color.White);
         }
 
-        protected void DrawFieldBorder(SpriteBatch batch)
+        void DrawFieldBorder(SpriteBatch batch)
         {
-            batch.Draw(borderTL, new Rectangle(0 - corner[0] * 16, 56 - corner[1] * 16, 8, 8), Color.White);
-            batch.Draw(borderT, new Rectangle(8 - corner[0] * 16, 56 - corner[1] * 16, 16 * width, 8), Color.White);
-            batch.Draw(borderTR, new Rectangle(8 + 16 * width - corner[0] * 16, 56 - corner[1] * 16, 8, 8), Color.White);
-            batch.Draw(borderL, new Rectangle(0 - corner[0] * 16, 64 - corner[1] * 16, 8, 16 * height), Color.White);
-            batch.Draw(borderR, new Rectangle(8 + 16 * width - corner[0] * 16, 64 - corner[1] * 16, 8, 16 * height), Color.White);
-            batch.Draw(borderBL, new Rectangle(0 - corner[0] * 16, 64 + 16 * height - corner[1] * 16, 8, 8), Color.White);
-            batch.Draw(borderB, new Rectangle(8 - corner[0] * 16, 64 + 16 * height - corner[1] * 16, 16 * width, 8), Color.White);
-            batch.Draw(borderBR, new Rectangle(8 + 16 * width - corner[0] * 16, 64 + 16 * height - corner[1] * 16, 8, 8), Color.White);
+            batch.Draw(s.borderTL, new Rectangle(0 - corner[0] * 16, 56 - corner[1] * 16, 8, 8), Color.White);
+            batch.Draw(s.borderT, new Rectangle(8 - corner[0] * 16, 56 - corner[1] * 16, 16 * width, 8), Color.White);
+            batch.Draw(s.borderTR, new Rectangle(8 + 16 * width - corner[0] * 16, 56 - corner[1] * 16, 8, 8), Color.White);
+            batch.Draw(s.borderL, new Rectangle(0 - corner[0] * 16, 64 - corner[1] * 16, 8, 16 * height), Color.White);
+            batch.Draw(s.borderR, new Rectangle(8 + 16 * width - corner[0] * 16, 64 - corner[1] * 16, 8, 16 * height), Color.White);
+            batch.Draw(s.borderBL, new Rectangle(0 - corner[0] * 16, 64 + 16 * height - corner[1] * 16, 8, 8), Color.White);
+            batch.Draw(s.borderB, new Rectangle(8 - corner[0] * 16, 64 + 16 * height - corner[1] * 16, 16 * width, 8), Color.White);
+            batch.Draw(s.borderBR, new Rectangle(8 + 16 * width - corner[0] * 16, 64 + 16 * height - corner[1] * 16, 8, 8), Color.White);
         }
 
-        protected void DrawTileSelect(SpriteBatch batch)
+        void DrawTileSelect(SpriteBatch batch)
         {
-            if (!faceSelected) batch.Draw(select, new Rectangle(8 + selectedTile[0] * 16 - corner[0] * 16, 64 + selectedTile[1] * 16 - corner[1] * 16, 16, 16), Color.White);
+            if (!faceSelected) batch.Draw(s.select, new Rectangle(8 + selectedTile[0] * 16 - corner[0] * 16, 64 + selectedTile[1] * 16 - corner[1] * 16, 16, 16), Color.White);
         }
 
-        protected void DrawField(SpriteBatch batch)
+        void DrawField(SpriteBatch batch)
         {
             for (int row = 0; row < height; row++)
             {
@@ -776,30 +484,30 @@ namespace Minesweeper
                     Texture2D tile;
                     if (gameState == GameState.Playing)
                     {
-                        if (mGame.tile[row, col].Flagged) tile = tFlag;
+                        if (mGame.tile[row, col].Flagged) tile = s.tFlag;
                         else
-                            if (mGame.tile[row, col].Hidden) tile = tHidden;
-                            else tile = t[mGame.tile[row, col].TileNum];
+                            if (mGame.tile[row, col].Hidden) tile = s.tHidden;
+                            else tile = s.t[mGame.tile[row, col].TileNum];
                     }
                     else
                     {
-                        if (mGame.tile[row, col].Flagged & !mGame.tile[row, col].MineHere) tile = tNotMine;
+                        if (mGame.tile[row, col].Flagged & !mGame.tile[row, col].MineHere) tile = s.tNotMine;
                         else
-                            if (mGame.tile[row, col].Flagged) tile = tFlag;
+                            if (mGame.tile[row, col].Flagged) tile = s.tFlag;
                             else
-                                if (mGame.tile[row, col].Hidden) tile = tHidden;
+                                if (mGame.tile[row, col].Hidden) tile = s.tHidden;
                                 else
-                                    if (row == selectedMine[1] && col == selectedMine[0] && gameState == GameState.Lost) tile = tClickedMine;
+                                    if (row == selectedMine[1] && col == selectedMine[0] && gameState == GameState.Lost) tile = s.tClickedMine;
                                     else
-                                        if (mGame.tile[row, col].MineHere) tile = tMine;
-                                        else tile = t[mGame.tile[row, col].TileNum];
+                                        if (mGame.tile[row, col].MineHere) tile = s.tMine;
+                                        else tile = s.t[mGame.tile[row, col].TileNum];
                     }
                     batch.Draw(tile, new Rectangle(8 + col * 16 - corner[0] * 16, 64 + row * 16 - corner[1] * 16, 16, 16), Color.White);
                 }
             }
         }
 
-        protected void TileClick()
+        void TileClick()
         {
             if (gameState != GameState.Playing) gameState = GameState.Playing;
             switch (mGame.SelectedAction(selectedTile[1], selectedTile[0]))
@@ -809,65 +517,69 @@ namespace Minesweeper
                     faceValue = Face.Happy;
                     if (cantSelectRevealed)
                     {
-                        for (int counter = 1; counter < width - 1 | counter < height - 1; counter++)
+                        bool foundGoodTile = false;
+                        int[] tempSelectedTile = new int[2];
+                        for (int counter = 1; counter < height | counter < width; counter++)
                         {
-                            if (selectedTile[1] >= counter)
-                                if (mGame.tile[selectedTile[1] - counter, selectedTile[0]].Hidden)
-                                {
-                                    selectedTile[1] -= counter;
-                                    //selectedTile[0] = selectedTile[0];
-                                    break;
-                                }
-                            if (selectedTile[0] >= counter)
-                                if (mGame.tile[selectedTile[1], selectedTile[0] - counter].Hidden)
-                                {
-                                    //selectedTile[1] = selectedTile[1];
-                                    selectedTile[0] -= counter;
-                                    break;
-                                }
-                            if (selectedTile[1] >= counter & selectedTile[0] >= counter)
-                                if (mGame.tile[selectedTile[1] - counter, selectedTile[0] - counter].Hidden)
-                                {
-                                    selectedTile[1] -= counter;
-                                    selectedTile[0] -= counter;
-                                    break;
-                                }
-                            if (selectedTile[0] <= width - 1 - counter)
-                                if (mGame.tile[selectedTile[1], selectedTile[0] + counter].Hidden)
-                                {
-                                    //selectedTile[1] = selectedTile[1];
-                                    selectedTile[0] += counter;
-                                    break;
-                                }
-                            if (selectedTile[1] >= counter & selectedTile[0] <= width - 1 - counter)
-                                if (mGame.tile[selectedTile[1] - counter, selectedTile[0] + counter].Hidden)
-                                {
-                                    selectedTile[1] -= counter;
-                                    selectedTile[0] += counter;
-                                    break;
-                                }
-                            if (selectedTile[1] <= height - 1 - counter)
-                                if (mGame.tile[selectedTile[1] + counter, selectedTile[0]].Hidden)
-                                {
-                                    selectedTile[1] += counter;
-                                    //selectedTile[0] = selectedTile[0];
-                                    break;
-                                }
-                            if (selectedTile[1] <= height - 1 - counter & selectedTile[0] >= counter)
-                                if (mGame.tile[selectedTile[1] + counter, selectedTile[0] - counter].Hidden)
-                                {
-                                    selectedTile[1] += counter;
-                                    selectedTile[0] -= counter;
-                                    break;
-                                }
-                            if (selectedTile[1] <= height - 1 - counter & selectedTile[0] <= width - 1 - counter)
-                                if (mGame.tile[selectedTile[1] + counter, selectedTile[0] + counter].Hidden)
-                                {
-                                    selectedTile[1] += counter;
-                                    selectedTile[0] += counter;
-                                    break;
-                                }
+                            int row = selectedTile[1] - counter;
+                            int col = selectedTile[0] - counter;
+                            for (; col <= selectedTile[0] + counter; col++)
+                            {
+                                if (row >= 0 && row < height && col >= 0 && col < width)
+                                    if (mGame.tile[row, col].Hidden)
+                                    {
+                                        tempSelectedTile[1] = row;
+                                        tempSelectedTile[0] = col;
+                                        if (!mGame.tile[tempSelectedTile[1], tempSelectedTile[0]].Flagged) foundGoodTile = true;
+                                        if (foundGoodTile) break;
+                                    }
+                            }
+                            if (foundGoodTile) break;
+                            col--;
+                            row++;
+                            for (; row <= selectedTile[1] + counter; row++)
+                            {
+                                if (row >= 0 && row < height && col >= 0 && col < width)
+                                    if (mGame.tile[row, col].Hidden)
+                                    {
+                                        tempSelectedTile[1] = row;
+                                        tempSelectedTile[0] = col;
+                                        if (!mGame.tile[tempSelectedTile[1], tempSelectedTile[0]].Flagged) foundGoodTile = true;
+                                        if (foundGoodTile) break;
+                                    }
+                            }
+                            if (foundGoodTile) break;
+                            row--;
+                            col--;
+                            for (; col >= selectedTile[0] - counter; col--)
+                            {
+                                if (row >= 0 && row < height && col >= 0 && col < width)
+                                    if (mGame.tile[row, col].Hidden)
+                                    {
+                                        tempSelectedTile[1] = row;
+                                        tempSelectedTile[0] = col;
+                                        if (!mGame.tile[tempSelectedTile[1], tempSelectedTile[0]].Flagged) foundGoodTile = true;
+                                        if (foundGoodTile) break;
+                                    }
+                            }
+                            if (foundGoodTile) break;
+                            col++;
+                            row--;
+                            for (; row >= selectedTile[1] - counter + 1; row--)
+                            {
+                                if (row >= 0 && row < height && col >= 0 && col < width)
+                                    if (mGame.tile[row, col].Hidden)
+                                    {
+                                        tempSelectedTile[1] = row;
+                                        tempSelectedTile[0] = col;
+                                        if (!mGame.tile[tempSelectedTile[1], tempSelectedTile[0]].Flagged) foundGoodTile = true;
+                                        if (foundGoodTile) break;
+                                    }
+                            }
+                            if (foundGoodTile) break;
+                            row++;
                         }
+                        selectedTile = tempSelectedTile;
                     }
                     break;
                 case 1: //Game won
@@ -919,7 +631,7 @@ namespace Minesweeper
             }
         }
 
-        protected void TileFlag()
+        void TileFlag()
         {
             if (gameState != GameState.Playing) gameState = GameState.Playing;
             if (!(mGame.tile[selectedTile[1], selectedTile[0]].Flagged))
@@ -937,8 +649,11 @@ namespace Minesweeper
             }
         }
 
-        protected void SetGame()
+        public void SetGame(int height, int width, int mines)
         {
+            this.height = height;
+            this.width = width;
+            this.mines = mines;
             mGame = new MinesweeperGame(height, width, mines);
             flags = mines;
             gameState = GameState.NotPlaying;
@@ -953,124 +668,7 @@ namespace Minesweeper
             resumable = true;
         }
 
-        protected void Resume()
-        {
-            gameState = oldGameState;
-        }
-
-        protected void NewGameClick()
-        {
-            gameState = GameState.NewGameMenu;
-        }
-
-        protected void OptionsClick()
-        {
-            gameState = GameState.OptionsMenu;
-            oldCantSelectRevealed = cantSelectRevealed;
-            oldFlagWithPlay = flagWithPlay;
-        }
-
-        protected void BestTimesClick()
-        {
-            gameState = GameState.BestTimesMenu;
-        }
-
-        protected void BeginnerClick()
-        {
-            height = 9;
-            width = 9;
-            mines = 10;
-            SetGame();
-        }
-
-        protected void IntermediateClick()
-        {
-            height = 16;
-            width = 16;
-            mines = 40;
-            SetGame();
-        }
-
-        protected void ExpertClick()
-        {
-            height = 24;
-            width = 30;
-            mines = 99;
-            SetGame();
-        }
-
-        protected void ZuneClick()
-        {
-            height = 15;
-            width = 14;
-            mines = 30;
-            SetGame();
-        }
-
-        protected void CustomClick()
-        {
-            gameState = GameState.CustomGameMenu;
-            tempHeight = height;
-            tempWidth = width;
-            tempMines = mines;
-        }
-
-        protected void Back()
-        {
-            switch (gameState)
-            {
-                case GameState.NewGameMenu:
-                    gameState = GameState.Menu;
-                    break;
-                case GameState.CustomGameMenu:
-                    gameState = GameState.NewGameMenu;
-                    break;
-                case GameState.OptionsMenu:
-                    if (oldCantSelectRevealed != cantSelectRevealed || oldFlagWithPlay != flagWithPlay) SetOptions();
-                    gameState = GameState.Menu;
-                    break;
-                case GameState.BestTimesMenu:
-                    gameState = GameState.Menu;
-                    break;
-            }
-        }
-
-        protected void CantSelectRevealedClick()
-        {
-            cantSelectRevealed = !cantSelectRevealed;
-        }
-
-        protected void FlagButtonClick()
-        {
-            flagWithPlay = !flagWithPlay;
-        }
-
-        protected void OKClick()
-        {
-            height = tempHeight;
-            width = tempWidth;
-            mines = tempMines;
-            SetGame();
-        }
-
-        protected void ResetClick()
-        {
-            bestBeginner = 999;
-            UpdateBestTime(Difficulty.Beginner);
-            bestIntermediate = 999;
-            UpdateBestTime(Difficulty.Intermediate);
-            bestExpert = 999;
-            UpdateBestTime(Difficulty.Expert);
-            bestZune = 999;
-            UpdateBestTime(Difficulty.Zune);
-        }
-
-        protected void DoNothing()
-        {
-
-        }
-
-        protected void GetBestTimes()
+        public void GetBestTimes()
         {
             string beginnerPath = Path.Combine(container.Path, "beginnertime.dat");
             string intermediatePath = Path.Combine(container.Path, "intermediatetime.dat");
@@ -1112,7 +710,7 @@ namespace Minesweeper
             else UpdateBestTime(Difficulty.Zune);
         }
 
-        protected void UpdateBestTime(Difficulty difficulty)
+        public void UpdateBestTime(Difficulty difficulty)
         {
             string beginnerPath = Path.Combine(container.Path, "beginnertime.dat");
             string intermediatePath = Path.Combine(container.Path, "intermediatetime.dat");
@@ -1143,10 +741,9 @@ namespace Minesweeper
                     dataFile.Close();
                     break;
             }
-            //container.Dispose();
         }
 
-        protected void GetOptions()
+        public void GetOptions()
         {
             if (File.Exists(Path.Combine(container.Path, "options.dat")))
             {
@@ -1154,17 +751,19 @@ namespace Minesweeper
                 dataFile = new BinaryReader(new FileStream(Path.Combine(container.Path, "options.dat"), FileMode.Open));
                 cantSelectRevealed = dataFile.ReadBoolean();
                 flagWithPlay = dataFile.ReadBoolean();
+                selectedSkin = dataFile.ReadInt32();
                 dataFile.Close();
             }
             else SetOptions();
         }
 
-        protected void SetOptions()
+        public void SetOptions()
         {
             BinaryWriter dataFile;
             dataFile = new BinaryWriter(new FileStream(Path.Combine(container.Path, "options.dat"), FileMode.Create));
             dataFile.Write(cantSelectRevealed);
             dataFile.Write(flagWithPlay);
+            dataFile.Write(selectedSkin);
             dataFile.Close();
         }
     }
