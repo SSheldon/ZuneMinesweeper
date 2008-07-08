@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="SkinfoWriter.Skinfo">
+    <name>Black</name>
+    <creator>wizard7926</creator>
+    <itemsBacked>false</itemsBacked>
+    <headersBacked>false</headersBacked>
+    <background>0 0 0</background>
+    <coloredText>1 1 1</coloredText>
+    <uncoloredText>0.5019608 0.5019608 0.5019608</uncoloredText>
+  </Asset>
+</XnaContent>

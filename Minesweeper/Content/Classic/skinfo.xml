@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="SkinfoWriter.Skinfo">
+    <name>Classic</name>
+    <creator>Microsoft</creator>
+    <itemsBacked>false</itemsBacked>
+    <headersBacked>false</headersBacked>
+    <background>0.7529412 0.7529412 0.7529412</background>
+    <coloredText>0 0 0</coloredText>
+    <uncoloredText>0.5019608 0.5019608 0.5019608</uncoloredText>
+  </Asset>
+</XnaContent>

@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="SkinfoWriter.Skinfo">
+    <name>Blue</name>
+    <creator>B.J. Miller</creator>
+    <itemsBacked>true</itemsBacked>
+    <headersBacked>true</headersBacked>
+    <background>0.384313732 0.5411765 0.7529412</background>
+    <coloredText>0.13333334 0.215686277 0.333333343</coloredText>
+    <uncoloredText>0.5372549 0.694117665 0.905882359</uncoloredText>
+  </Asset>
+</XnaContent>

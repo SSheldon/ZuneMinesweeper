@@ -65,6 +65,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="Skin.cs" />
+    <Compile Include="SkinfoReader.cs" />
     <Compile Include="Tile.cs" />
   </ItemGroup>
   <ItemGroup>

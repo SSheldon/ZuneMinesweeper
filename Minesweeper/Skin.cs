@@ -15,6 +15,7 @@ namespace Minesweeper
     {
         public string name, creator;
         public bool itemsBacked, headersBacked;
+        public Vector3 vBackground, vColoredText, vUncoloredText;
 
         public Texture2D top;
         public Texture2D[] numbers = new Texture2D[12];
@@ -26,61 +27,83 @@ namespace Minesweeper
         public Texture2D select;
         public Texture2D mTop, mSelect;
         public Texture2D numBox, rightArrow, leftArrow;
+        public Texture2D itemBack, headerBack;
         public SpriteFont normal, header, small;
-        public Color background, coloredText, uncoloredText;
-        public Texture2D itemBack, headerBack;        
+        public Color background, coloredText, uncoloredText;        
 
-        public Skin(string name, string creator, ContentManager Content, Color background, Color coloredText, Color uncoloredText, bool itemsBacked, bool headersBacked)
+        public Skin(string name, string creator, bool itemsBacked, bool headersBacked, Vector3 background, Vector3 coloredText, Vector3 uncoloredText)
         {
             this.name = name;
             this.creator = creator;
-            this.background = background;
-            this.coloredText = coloredText;
-            this.uncoloredText = uncoloredText;
             this.itemsBacked = itemsBacked;
             this.headersBacked = headersBacked;
+            vBackground = background;
+            vColoredText = coloredText;
+            vUncoloredText = uncoloredText;
+        }
 
-            top = Content.Load<Texture2D>(name + "/top");
+        public void InitializeTextures(string directory, ContentManager Content)
+        {
+            top = Content.Load<Texture2D>(directory + "/top");
             for (int counter = 0; counter < 10; counter++)
             {
-                numbers[counter] = Content.Load<Texture2D>(name + "/Numbers/" + counter);
+                numbers[counter] = Content.Load<Texture2D>(directory + "/Numbers/" + counter);
             }
-            numbers[10] = Content.Load<Texture2D>(name + "/Numbers/-");
-            numbers[11] = Content.Load<Texture2D>(name + "/Numbers/_");
-            fHappy = Content.Load<Texture2D>(name + "/Faces/happy");
-            fWin = Content.Load<Texture2D>(name + "/Faces/win");
-            fDead = Content.Load<Texture2D>(name + "/Faces/dead");
-            fScared = Content.Load<Texture2D>(name + "/Faces/scared");
-            faceSelect = Content.Load<Texture2D>(name + "/faceselect");
-            borderB = Content.Load<Texture2D>(name + "/Borders/B");
-            borderBL = Content.Load<Texture2D>(name + "/Borders/BL");
-            borderBR = Content.Load<Texture2D>(name + "/Borders/BR");
-            borderL = Content.Load<Texture2D>(name + "/Borders/L");
-            borderR = Content.Load<Texture2D>(name + "/Borders/R");
-            borderT = Content.Load<Texture2D>(name + "/Borders/T");
-            borderTL = Content.Load<Texture2D>(name + "/Borders/TL");
-            borderTR = Content.Load<Texture2D>(name + "/Borders/TR");
+            numbers[10] = Content.Load<Texture2D>(directory + "/Numbers/-");
+            numbers[11] = Content.Load<Texture2D>(directory + "/Numbers/_");
+            fHappy = Content.Load<Texture2D>(directory + "/Faces/happy");
+            fWin = Content.Load<Texture2D>(directory + "/Faces/win");
+            fDead = Content.Load<Texture2D>(directory + "/Faces/dead");
+            fScared = Content.Load<Texture2D>(directory + "/Faces/scared");
+            faceSelect = Content.Load<Texture2D>(directory + "/faceselect");
+            borderB = Content.Load<Texture2D>(directory + "/Borders/B");
+            borderBL = Content.Load<Texture2D>(directory + "/Borders/BL");
+            borderBR = Content.Load<Texture2D>(directory + "/Borders/BR");
+            borderL = Content.Load<Texture2D>(directory + "/Borders/L");
+            borderR = Content.Load<Texture2D>(directory + "/Borders/R");
+            borderT = Content.Load<Texture2D>(directory + "/Borders/T");
+            borderTL = Content.Load<Texture2D>(directory + "/Borders/TL");
+            borderTR = Content.Load<Texture2D>(directory + "/Borders/TR");
             for (int counter = 0; counter < 9; counter++)
             {
-                t[counter] = Content.Load<Texture2D>(name + "/Tiles/" + counter);
+                t[counter] = Content.Load<Texture2D>(directory + "/Tiles/" + counter);
             }
-            tHidden = Content.Load<Texture2D>(name + "/Tiles/hidden");
-            tFlag = Content.Load<Texture2D>(name + "/Tiles/flag");
-            tMine = Content.Load<Texture2D>(name + "/Tiles/bomb");
-            tNotMine = Content.Load<Texture2D>(name + "/Tiles/notbomb");
-            tClickedMine = Content.Load<Texture2D>(name + "/Tiles/clickedbomb");
-            select = Content.Load<Texture2D>(name + "/select");
-            mTop = Content.Load<Texture2D>(name + "/Menu/top");
-            mSelect = Content.Load<Texture2D>(name + "/Menu/select");
-            numBox = Content.Load<Texture2D>(name + "/Menu/number back");
-            rightArrow = Content.Load<Texture2D>(name + "/Menu/right arrow");
-            leftArrow = Content.Load<Texture2D>(name + "/Menu/left arrow");
-            normal = Content.Load<SpriteFont>(name + "/Fonts/normal");
-            header = Content.Load<SpriteFont>(name + "/Fonts/header");
-            small = Content.Load<SpriteFont>(name + "/Fonts/small");
+            tHidden = Content.Load<Texture2D>(directory + "/Tiles/hidden");
+            tFlag = Content.Load<Texture2D>(directory + "/Tiles/flag");
+            tMine = Content.Load<Texture2D>(directory + "/Tiles/bomb");
+            tNotMine = Content.Load<Texture2D>(directory + "/Tiles/notbomb");
+            tClickedMine = Content.Load<Texture2D>(directory + "/Tiles/clickedbomb");
+            select = Content.Load<Texture2D>(directory + "/select");
+            mTop = Content.Load<Texture2D>(directory + "/Menu/top");
+            mSelect = Content.Load<Texture2D>(directory + "/Menu/select");
+            numBox = Content.Load<Texture2D>(directory + "/Menu/number back");
+            rightArrow = Content.Load<Texture2D>(directory + "/Menu/right arrow");
+            leftArrow = Content.Load<Texture2D>(directory + "/Menu/left arrow");
+            normal = Content.Load<SpriteFont>(directory + "/Fonts/normal");
+            header = Content.Load<SpriteFont>(directory + "/Fonts/header");
+            small = Content.Load<SpriteFont>(directory + "/Fonts/small");
 
-            if (this.itemsBacked) itemBack = Content.Load<Texture2D>(name + "/Menu/item back");
-            if (this.headersBacked) headerBack = Content.Load<Texture2D>(name + "/Menu/header back");
+            if (this.itemsBacked) itemBack = Content.Load<Texture2D>(directory + "/Menu/item back");
+            if (this.headersBacked) headerBack = Content.Load<Texture2D>(directory + "/Menu/header back");
+
+            background = new Color(vBackground);
+            coloredText = new Color(vColoredText);
+            uncoloredText = new Color(vUncoloredText);
+        }
+    }
+
+    public class SkinContentReader : ContentTypeReader<Skin>
+    {
+        protected override Skin Read(ContentReader input, Skin existingInstance)
+        {
+            string name = input.ReadString();
+            string creator = input.ReadString();
+            bool itemsBacked = input.ReadBoolean();
+            bool headersBacked = input.ReadBoolean();
+            Vector3 background = input.ReadVector3();
+            Vector3 coloredText = input.ReadVector3();
+            Vector3 uncoloredText = input.ReadVector3();
+            return new Skin(name, creator, itemsBacked, headersBacked, background, coloredText, uncoloredText);
         }
     }
 }

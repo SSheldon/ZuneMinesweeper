@@ -116,9 +116,12 @@ namespace Minesweeper
 
             // TODO: use this.Content to load your game content here
             blank = Content.Load<Texture2D>("blank");
-            skins.Add(new Skin("Classic", "Microsoft", Content, Color.Silver, Color.Black, Color.Gray, false, false));
-            skins.Add(new Skin("Blue", "B.J. Miller", Content, new Color(98, 138, 192), new Color(34, 55, 85), new Color(137, 177, 231), true, true));
-            skins.Add(new Skin("Black", "wizard7926", Content, Color.Black, Color.White, Color.Gray, false, false));
+            foreach (String directory in Directory.GetDirectories(Path.Combine(StorageContainer.TitleLocation, Content.RootDirectory)))
+            {
+                Skin skin = Content.Load<Skin>(directory + "/skinfo");
+                skin.InitializeTextures(directory, Content);
+                skins.Add(skin);                
+            }
             if (selectedSkin > skins.Count - 1) selectedSkin = 0;
             s = skins[selectedSkin];
         }
