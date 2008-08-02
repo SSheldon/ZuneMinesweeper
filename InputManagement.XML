@@ -1,0 +1,524 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>InputManagement</name>
+    </assembly>
+    <members>
+        <member name="T:InputManagement.TouchInputManager">
+            <summary>
+            A game component that provides information about the state of the Zune's touchpad and raises events from player input.
+            </summary>
+        </member>
+        <member name="M:InputManagement.TouchInputManager.Initialize">
+            <summary>
+            Allows the game component to perform any initialization it needs to before starting to run.
+            </summary>
+        </member>
+        <member name="M:InputManagement.TouchInputManager.Update(Microsoft.Xna.Framework.GameTime)">
+            <summary>
+            Allows the game component to update itself.
+            </summary>
+            <param name="gameTime">Provides a snapshot of timing values.</param>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.TouchpadPressed">
+            <summary>
+            Raised when the touchpad is pressed (or "clicked").
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.TouchpadReleased">
+            <summary>
+            Raised when the touchpad is released.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.TouchpadHeld">
+            <summary>
+            Raised when the touchpad has been pressed and held for the time specified in TouchpadHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.TouchpadHeldReleased">
+            <summary>
+            Raised when the touchpad has been released after being pressed and held for a time longer than the time specified in TouchpadHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.TouchpadNotHeldReleased">
+            <summary>
+            Raised when the touchpad has been released after being pressed but not held for a time longer than the time specified in TouchpadHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.TouchpadTouched">
+            <summary>
+            Raised when the touchpad is touched.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.TouchpadUntouched">
+            <summary>
+            Raised when the user removes their finger from the touchpad.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.TouchpadNotFlickedUntouched">
+            <summary>
+            Raised when the user removes their finger from the touchpad and they have not executed a flick.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.TouchpadFlicked">
+            <summary>
+            Raised when the user executes a flick; the range of time defining how long the user may take to execute a flick is defined by FlickMinTime and FlickMaxTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.CenterTouched">
+            <summary>
+            Raised when the center section of the touchpad is touched.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.CenterUntouched">
+            <summary>
+            Raised when the user removes their finger from the center section of the touchpad.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.CenterNotFlickedUntouched">
+            <summary>
+            Raised when the user removes their finger from the center section of the touchpad and they have not executed a flick.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.RightTouched">
+            <summary>
+            Raised when the right horizontal section of the touchpad is touched.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.RightUntouched">
+            <summary>
+            Raised when the user removes their finger from the right horizontal section of the touchpad.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.RightNotFlickedUntouched">
+            <summary>
+            Raised when the user removes their finger from the right horizontal section of the touchpad and they have not executed a flick.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.LeftTouched">
+            <summary>
+            Raised when the left horizontal section of the touchpad is touched.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.LeftUntouched">
+            <summary>
+            Raised when the user removes their finger from the left horizontal section of the touchpad.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.LeftNotFlickedUntouched">
+            <summary>
+            Raised when the user removes their finger from the left horizontal section of the touchpad and they have not executed a flick.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.UpTouched">
+            <summary>
+            Raised when the up vertical section of the touchpad is touched.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.UpUntouched">
+            <summary>
+            Raised when the user removes their finger from the up vertical section of the touchpad.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.UpNotFlickedUntouched">
+            <summary>
+            Raised when the user removes their finger from the up vertical section of the touchpad and they have not executed a flick.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.DownTouched">
+            <summary>
+            Raised when the down vertical section of the touchpad is touched.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.DownUntouched">
+            <summary>
+            Raised when the user removes their finger from the down vertical section of the touchpad.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.DownNotFlickedUntouched">
+            <summary>
+            Raised when the user removes their finger from the down vertical section of the touchpad and they have not executed a flick.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.LeftToRightFlick">
+            <summary>
+            Raised when the user executes a flick that began with a touch in the left horizontal section and ended with an untouch in the right horizontal section.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.RightToLeftFlick">
+            <summary>
+            Raised when the user executes a flick that began with a touch in the right horizontal section and ended with an untouch in the left horizontal section.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.DownToUpFlick">
+            <summary>
+            Raised when the user executes a flick that began with a touch in the down vertical section and ended with an untouch in the up vertical section.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.UpToDownFlick">
+            <summary>
+            Raised when the user executes a flick that began with a touch in the up vertical section and ended with an untouch in the down vertical section.
+            </summary>
+        </member>
+        <member name="P:InputManagement.TouchInputManager.HasTouchpad">
+            <summary>
+            Gets a value indicating whether the device has a touchpad.
+            </summary>
+        </member>
+        <member name="P:InputManagement.TouchInputManager.FlickMinTime">
+            <summary>
+            Gets or sets the amount of time (in seconds) that a flick must take to raise a flick event.
+            </summary>
+        </member>
+        <member name="P:InputManagement.TouchInputManager.FlickMaxTime">
+            <summary>
+            Gets or sets the maximum amount of time (in seconds) that a flick can take to raise a flick event.
+            </summary>
+        </member>
+        <member name="P:InputManagement.TouchInputManager.TouchpadIsTouched">
+            <summary>
+            Gets a value indicating whether the touchpad is currently touched.
+            </summary>
+        </member>
+        <member name="P:InputManagement.TouchInputManager.TouchpadIsPressed">
+            <summary>
+            Gets a value indicating whether the touchpad is currently pressed ("clicked").
+            </summary>
+        </member>
+        <member name="P:InputManagement.TouchInputManager.TouchedPosition">
+            <summary>
+            Gets the currently touched position of the Zune touchpad as a Position.
+            </summary>
+        </member>
+        <member name="P:InputManagement.TouchInputManager.TouchpadHoldTime">
+            <summary>
+            Gets or sets the amount of time (in seconds) that the touchpad must be held to raise a TouchpadHeld event.
+            </summary>
+        </member>
+        <member name="T:InputManagement.InputEventHandler">
+            <summary>
+            Represents the method that will handle an input event. 
+            </summary>
+        </member>
+        <member name="T:InputManagement.FlickEventHandler">
+            <summary>
+            Represents the method that will handle a flick event.
+            </summary>
+            <param name="duration">The amount of time (in seconds) that the flick lasted.</param>
+            <param name="startPosition">The position on the touch pad at which the flick began.</param>
+            <param name="endPosition">The position on the touch pad at which the flick ended.</param>
+        </member>
+        <member name="T:InputManagement.TouchEventHandler">
+            <summary>
+            Represents the method that will handle a touch pad event.
+            </summary>
+            <param name="position">The position on the touch pad at which the event was raised.</param>
+        </member>
+        <member name="T:InputManagement.TouchpadSection">
+            <summary>
+            Defines the sections of the Zune touchpad.
+            </summary>
+        </member>
+        <member name="T:InputManagement.TouchpadPosition">
+            <summary>
+            Represents a position on the Zune touchpad. 
+            </summary>
+        </member>
+        <member name="P:InputManagement.TouchpadPosition.Coordinate">
+            <summary>
+            Gets the position on the Zune touchpad as a 2D Vector. 
+            </summary>
+        </member>
+        <member name="P:InputManagement.TouchpadPosition.HorizontalPosition">
+            <summary>
+            Gets the horizontal component of the position on the Zune touchpad. 
+            </summary>
+        </member>
+        <member name="P:InputManagement.TouchpadPosition.VerticalPosition">
+            <summary>
+            Gets the vertical component of the position on the Zune touchpad. 
+            </summary>
+        </member>
+        <member name="P:InputManagement.TouchpadPosition.Section">
+            <summary>
+            Gets a value describing what section of the Zune touchpad the position is on.  
+            </summary>
+        </member>
+        <member name="P:InputManagement.TouchpadPosition.HorizontalSection">
+            <summary>
+            Gets a value describing what horizontal section of the Zune touchpad the position is on. 
+            </summary>
+        </member>
+        <member name="P:InputManagement.TouchpadPosition.VerticalSection">
+            <summary>
+            Gets a value describing what vertical section of the Zune touchpad the position is on.  
+            </summary>
+        </member>
+        <member name="T:InputManagement.InputManager">
+            <summary>
+            A game component that provides information about the state of the Zune's controls and raises events from player input.
+            </summary>
+        </member>
+        <member name="M:InputManagement.InputManager.Initialize">
+            <summary>
+            Allows the game component to perform any initialization it needs to before starting to run.
+            </summary>
+        </member>
+        <member name="M:InputManagement.InputManager.Update(Microsoft.Xna.Framework.GameTime)">
+            <summary>
+            Allows the game component to update itself.
+            </summary>
+            <param name="gameTime">Provides a snapshot of timing values.</param>
+        </member>
+        <member name="E:InputManagement.InputManager.PlayPressed">
+            <summary>
+            Raised when the Play button is pressed.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.PlayReleased">
+            <summary>
+            Raised when the Play button is released.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.PlayHeld">
+            <summary>
+            Raised when the Play button has been pressed and held for the time specified in PlayHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.PlayHeldReleased">
+            <summary>
+            Raised when the Play button has been released after being pressed and held for a time longer than the time specified in PlayHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.PlayNotHeldReleased">
+            <summary>
+            Raised when the Play button has been released after being pressed but not held for a time longer than the time specified in PlayHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.BackPressed">
+            <summary>
+            Raised when the Back button is pressed.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.BackReleased">
+            <summary>
+            Raised when the Back button is released.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.BackHeld">
+            <summary>
+            Raised when the Back button has been pressed and held for the time specified in BackHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.BackHeldReleased">
+            <summary>
+            Raised when the Back button has been released after being pressed and held for a time longer than the time specified in BackHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.BackNotHeldReleased">
+            <summary>
+            Raised when the Back button has been released after being pressed but not held for a time longer than the time specified in BackHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.CenterPressed">
+            <summary>
+            Raised when the Center button is pressed.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.CenterReleased">
+            <summary>
+            Raised when the Center button is released.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.CenterHeld">
+            <summary>
+            Raised when the Center button has been pressed and held for the time specified in CenterHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.CenterHeldReleased">
+            <summary>
+            Raised when the Center button has been released after being pressed and held for a time longer than the time specified in CenterHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.CenterNotHeldReleased">
+            <summary>
+            Raised when the Center button has been released after being pressed but not held for a time longer than the time specified in CenterHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.RightPressed">
+            <summary>
+            Raised when the Right direction on the Zune Pad is pressed.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.RightReleased">
+            <summary>
+            Raised when the Right direction on the Zune Pad is released.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.RightHeld">
+            <summary>
+            Raised when the Right direction on the Zune Pad has been pressed and held for the time specified in RightHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.RightHeldReleased">
+            <summary>
+            Raised when the Right direction on the Zune Pad has been released after being pressed and held for a time longer than the time specified in RightHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.RightNotHeldReleased">
+            <summary>
+            Raised when the Right direction on the Zune Pad has been released after being pressed but not held for a time longer than the time specified in RightHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.LeftPressed">
+            <summary>
+            Raised when the Left direction on the Zune Pad is pressed.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.LeftReleased">
+            <summary>
+            Raised when the Left direction on the Zune Pad is released.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.LeftHeld">
+            <summary>
+            Raised when the Left direction on the Zune Pad has been pressed and held for the time specified in LeftHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.LeftHeldReleased">
+            <summary>
+            Raised when the Left direction on the Zune Pad has been released after being pressed and held for a time longer than the time specified in LeftHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.LeftNotHeldReleased">
+            <summary>
+            Raised when the Left direction on the Zune Pad has been released after being pressed but not held for a time longer than the time specified in LeftHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.UpPressed">
+            <summary>
+            Raised when the Up direction on the Zune Pad is pressed.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.UpReleased">
+            <summary>
+            Raised when the Up direction on the Zune Pad is released.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.UpHeld">
+            <summary>
+            Raised when the Up direction on the Zune Pad has been pressed and held for the time specified in UpHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.UpHeldReleased">
+            <summary>
+            Raised when the Up direction on the Zune Pad has been released after being pressed and held for a time longer than the time specified in UpHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.UpNotHeldReleased">
+            <summary>
+            Raised when the Up direction on the Zune Pad has been released after being pressed but not held for a time longer than the time specified in UpHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.DownPressed">
+            <summary>
+            Raised when the Down direction on the Zune Pad is pressed.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.DownReleased">
+            <summary>
+            Raised when the Down direction on the Zune Pad is released.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.DownHeld">
+            <summary>
+            Raised when the Down direction on the Zune Pad has been pressed and held for the time specified in DownHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.DownHeldReleased">
+            <summary>
+            Raised when the Down direction on the Zune Pad has been released after being pressed and held for a time longer than the time specified in DownHoldTime.
+            </summary>
+        </member>
+        <member name="E:InputManagement.InputManager.DownNotHeldReleased">
+            <summary>
+            Raised when the Down direction on the Zune Pad has been released after being pressed but not held for a time longer than the time specified in DownHoldTime.
+            </summary>
+        </member>
+        <member name="P:InputManagement.InputManager.HoldTime">
+            <summary>
+            Sets the amount of time (in seconds) that a button must be held to raise a Button Held event.
+            </summary>
+        </member>
+        <member name="P:InputManagement.InputManager.PlayHoldTime">
+            <summary>
+            Gets or sets the amount of time (in seconds) that the Play button must be held to raise a PlayHeld event.
+            </summary>
+        </member>
+        <member name="P:InputManagement.InputManager.BackHoldTime">
+            <summary>
+            Gets or sets the amount of time (in seconds) that the Back button must be held to raise a BackHeld event.
+            </summary>
+        </member>
+        <member name="P:InputManagement.InputManager.CenterHoldTime">
+            <summary>
+            Gets or sets the amount of time (in seconds) that the Center button must be held to raise a CenterHeld event.
+            </summary>
+        </member>
+        <member name="P:InputManagement.InputManager.RightHoldTime">
+            <summary>
+            Gets or sets the amount of time (in seconds) that the Right direction on the Zune Pad must be held to raise a RightHeld event.
+            </summary>
+        </member>
+        <member name="P:InputManagement.InputManager.LeftHoldTime">
+            <summary>
+            Gets or sets the amount of time (in seconds) that the Left direction on the Zune Pad must be held to raise a LeftHeld event.
+            </summary>
+        </member>
+        <member name="P:InputManagement.InputManager.UpHoldTime">
+            <summary>
+            Gets or sets the amount of time (in seconds) that the Up direction on the Zune Pad must be held to raise an UpHeld event.
+            </summary>
+        </member>
+        <member name="P:InputManagement.InputManager.DownHoldTime">
+            <summary>
+            Gets or sets the amount of time (in seconds) that the Down direction on the Zune Pad must be held to raise a DownHeld event.
+            </summary>
+        </member>
+        <member name="P:InputManagement.InputManager.PlayIsPressed">
+            <summary>
+            Indicates whether the Play button is currently pressed.
+            </summary>
+        </member>
+        <member name="P:InputManagement.InputManager.BackIsPressed">
+            <summary>
+            Indicates whether the Back button is currently pressed.
+            </summary>
+        </member>
+        <member name="P:InputManagement.InputManager.CenterIsPressed">
+            <summary>
+            Indicates whether the Center button is currently pressed.
+            </summary>
+        </member>
+        <member name="P:InputManagement.InputManager.RightIsPressed">
+            <summary>
+            Indicates whether the Right direction on the Zune Pad is currently pressed.
+            </summary>
+        </member>
+        <member name="P:InputManagement.InputManager.LeftIsPressed">
+            <summary>
+            Indicates whether the Left direction on the Zune Pad is currently pressed.
+            </summary>
+        </member>
+        <member name="P:InputManagement.InputManager.UpIsPressed">
+            <summary>
+            Indicates whether the Up direction on the Zune Pad is currently pressed.
+            </summary>
+        </member>
+        <member name="P:InputManagement.InputManager.DownIsPressed">
+            <summary>
+            Indicates whether the Down direction on the Zune Pad is currently pressed.
+            </summary>
+        </member>
+    </members>
+</doc>

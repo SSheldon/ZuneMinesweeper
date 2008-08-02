@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.GamerServices;
 using System.IO;
+using InputManagement;
 
 namespace Minesweeper
 {
@@ -23,6 +24,8 @@ namespace Minesweeper
         StorageDevice storageDevice;
         StorageContainer container;
         MenuComponent menuComponent;
+        InputManager i;
+        TouchInputManager tI;
         Skin s;
         public List<Skin> skins;
         public Texture2D blank;
@@ -43,20 +46,23 @@ namespace Minesweeper
         int[] corner = new int[2];
         enum Face { Happy, Win, Dead, Scared };
         Face faceValue;
-        GamePadState newPadState;
         public enum GameState { NotPlaying, Playing, Won, Lost, Menu };
         public GameState gameState;
         public GameState oldGameState;
         bool faceSelected;
         public bool resumable;
+        bool scrollRight, scrollLeft, scrollUp, scrollDown;
+        TimeSpan? lastScrollRight, lastScrollLeft, lastScrollUp, lastScrollDown;
         
 
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-
-            this.Components.Add(new GamerServicesComponent(this));
+            i = new InputManager(this);
+            this.Components.Add(i);
+            tI = new TouchInputManager(this);
+            this.Components.Add(tI);
         }
 
         /// <summary>
@@ -69,7 +75,6 @@ namespace Minesweeper
         {
             // TODO: Add your initialization logic here
             IAsyncResult syncResult = Guide.BeginShowStorageDeviceSelector(null, null);
-            //while (!ar.IsCompleted) Thread.Sleep(10);
             storageDevice = Guide.EndShowStorageDeviceSelector(syncResult);
             //if (!storageDevice.IsConnected) Exit();
             container = storageDevice.OpenContainer("Minesweeper");
@@ -79,10 +84,12 @@ namespace Minesweeper
             bestZune = 999;
             GetBestTimes();
 
+            tI.Enabled = tI.HasTouchpad;
+
             height = 9;
             width = 9;
             mines = 10;
-            cantSelectRevealed = true;
+            cantSelectRevealed = false;
             flagWithPlay = true;
             selectedSkin = 0;
             flags = mines;
@@ -99,10 +106,437 @@ namespace Minesweeper
             totalTime = 0.0;
             resumable = false;
             skins = new List<Skin>();
+            scrollRight = false;
+            lastScrollRight = null;
 
             GetOptions();
+            InitializeInput();
             
             base.Initialize();
+        }
+
+        void InitializeInput()
+        {
+            i.RightPressed += new InputEventHandler(RightPress);
+            i.LeftPressed += new InputEventHandler(LeftPress);
+            i.DownPressed += new InputEventHandler(DownPress);
+            i.UpPressed += new InputEventHandler(UpPress);
+            i.CenterReleased += new InputEventHandler(CenterRelease);
+            i.PlayReleased += new InputEventHandler(PlayRelease);
+            i.BackReleased += new InputEventHandler(BackPress);
+            i.HoldTime = 0.3F;
+            i.RightHeld += new InputEventHandler(RightHold);
+            i.RightHeldReleased += new InputEventHandler(RightUnhold);
+            i.LeftHeld += new InputEventHandler(LeftHold);
+            i.LeftHeldReleased += new InputEventHandler(LeftUnhold);
+            i.UpHeld += new InputEventHandler(UpHold);
+            i.UpHeldReleased += new InputEventHandler(UpUnhold);
+            i.DownHeld += new InputEventHandler(DownHold);
+            i.DownHeldReleased += new InputEventHandler(DownUnhold);
+            tI.LeftToRightFlick += new FlickEventHandler(RightFlick);
+            tI.RightToLeftFlick += new FlickEventHandler(LeftFlick);
+            tI.DownToUpFlick += new FlickEventHandler(UpFlick);
+            tI.UpToDownFlick += new FlickEventHandler(DownFlick);
+        }
+
+        void DownFlick(float duration, TouchpadPosition startPosition, TouchpadPosition endPosition)
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    if (!faceSelected)
+                    {
+                        selectedTile[1] = 0;
+                        UpPress();
+                        UpPress();
+                    }
+                    break;
+            }
+        }
+        void UpFlick(float duration, TouchpadPosition startPosition, TouchpadPosition endPosition)
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    if (!faceSelected)
+                    {
+                        selectedTile[1] = height - 1;
+                        DownPress();
+                        DownPress();
+                    }
+                    break;
+            }
+        }
+        void LeftFlick(float duration, TouchpadPosition startPosition, TouchpadPosition endPosition)
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    if (!faceSelected)
+                    {
+                        selectedTile[0] = width - 1;
+                        RightPress();
+                    }
+                    break;
+            }
+        }
+        void RightFlick(float duration, TouchpadPosition startPosition, TouchpadPosition endPosition)
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    if (!faceSelected)
+                    {
+                        selectedTile[0] = 0;
+                        LeftPress();
+                    }
+                    break;
+            }
+
+        }
+        void DownUnhold()
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    scrollDown = false;
+                    lastScrollDown = null;
+                    break;
+            }
+        }
+        void DownHold()
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    scrollDown = true;
+                    break;
+            }
+        }
+        void UpUnhold()
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    scrollUp = false;
+                    lastScrollUp = null;
+                    break;
+            }
+        }
+        void UpHold()
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    scrollUp = true;
+                    break;
+            }
+        }
+        void LeftUnhold()
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    scrollLeft = false;
+                    lastScrollLeft = null;
+                    break;
+            }
+        }
+        void LeftHold()
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    //selectedTile[0] = 0;
+                    scrollLeft = true;
+                    break;
+            }
+        }
+        void RightUnhold()
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    scrollRight = false;
+                    lastScrollRight = null;
+                    break;
+            }
+        }
+        void RightHold()
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    //selectedTile[0] = width - 1;
+                    scrollRight = true;
+                    break;
+            }
+        }
+        void BackPress()
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                case GameState.Lost:
+                case GameState.Won:
+                    oldGameState = gameState;
+                    gameState = GameState.Menu;
+                    menuComponent.menuState = Menus.Main;
+                    break;
+                case GameState.Menu:
+                    menuComponent.Back();
+                    break;
+            }
+        }
+        void PlayRelease()
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    if (!faceSelected)
+                        if (flagWithPlay) TileFlag();
+                        else
+                        {
+                            if (mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
+                            {
+                                TileClick();
+                            }
+                            else
+                            {
+                                SurroundClick();
+                            }
+                        }
+                    break;
+            }
+        }
+        void CenterRelease()
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    if (faceSelected) SetGame(height, width, mines);
+                    else
+                        if (flagWithPlay)
+                        {
+                            if (mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
+                            {
+                                TileClick();
+                            }
+                            else
+                            {
+                                SurroundClick();
+                            }
+                        }
+                        else TileFlag();
+                    break;
+                case GameState.Lost:
+                case GameState.Won:
+                    SetGame(height, width, mines);
+                    break;
+                case GameState.Menu:
+                    menuComponent.currentMenu.ClickItem();
+                    break;
+            }
+        }
+        void UpPress()
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    if (faceSelected)
+                    {
+                        selectedTile[1] = height - 1;
+                        faceSelected = false;
+                    }
+                    else
+                        if (selectedTile[1] == 0) faceSelected = true;
+                        else selectedTile[1]--;
+                    if (cantSelectRevealed && !mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
+                    {
+                        //what to do with a bad tile
+                        bool foundGoodTile = false;
+                        for (int row = selectedTile[1]; row >= 0; row--)
+                        {
+                            int distance = 100;
+                            int bestTile = 0;
+                            for (int col = 0; col < width; col++)
+                            {
+                                if (mGame.tile[row, col].Hidden)
+                                {
+                                    int tempDistance = Math.Abs(selectedTile[0] - col);
+                                    if (tempDistance < distance)
+                                    {
+                                        bestTile = col;
+                                        distance = tempDistance;
+                                    }
+                                    selectedTile[1] = row;
+                                    foundGoodTile = true;
+                                }
+                            }
+                            if (foundGoodTile)
+                            {
+                                selectedTile[0] = bestTile;
+                                break;
+                            }
+                        }
+                        if (!foundGoodTile) faceSelected = true;
+                    }
+                    break;
+                case GameState.Menu:
+                    menuComponent.currentMenu.UpClick();
+                    break;
+            }
+                    
+        }
+        void DownPress()
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    if (faceSelected)
+                    {
+                        selectedTile[1] = 0;
+                        faceSelected = false;
+                    }
+                    else
+                        if (selectedTile[1] < height - 1) selectedTile[1]++;
+                        else faceSelected = true;
+                    if (cantSelectRevealed && !mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
+                    {
+                        //what to do with a bad tile
+                        bool foundGoodTile = false;
+                        for (int row = selectedTile[1]; row < height; row++)
+                        {
+                            int distance = 100;
+                            int bestTile = 0;
+                            for (int col = 0; col < width; col++)
+                            {
+                                if (mGame.tile[row, col].Hidden)
+                                {
+                                    int tempDistance = Math.Abs(selectedTile[0] - col);
+                                    if (tempDistance < distance)
+                                    {
+                                        bestTile = col;
+                                        distance = tempDistance;
+                                    }
+                                    selectedTile[1] = row;
+                                    foundGoodTile = true;
+                                }
+                            }
+                            if (foundGoodTile)
+                            {
+                                selectedTile[0] = bestTile;
+                                break;
+                            }
+                        }
+                        if (!foundGoodTile) faceSelected = true;
+                    }
+                    break;
+                case GameState.Menu:
+                    menuComponent.currentMenu.DownClick();
+                    break;
+            }
+        }
+        void LeftPress()
+        {
+            switch (gameState)
+            {
+                case GameState.Playing:
+                case GameState.NotPlaying:
+                    if (!faceSelected)
+                    {
+                        if (selectedTile[0] == 0) selectedTile[0] = width - 1;
+                        else selectedTile[0]--;
+                        if (cantSelectRevealed && !mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
+                        {
+                            bool foundGoodTile = false;
+                            for (int col = selectedTile[0] - 1; col >= 0; col--)
+                            {
+                                if (mGame.tile[selectedTile[1], col].Hidden)
+                                {
+                                    selectedTile[0] = col;
+                                    foundGoodTile = true;
+                                    break;
+                                }
+                            }
+                            if (!foundGoodTile)
+                            {
+                                for (int col = width - 1; col >= selectedTile[0]; col--)
+                                {
+                                    if (mGame.tile[selectedTile[1], col].Hidden)
+                                    {
+                                        selectedTile[0] = col;
+                                        foundGoodTile = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case GameState.Menu:
+                    menuComponent.LeftClick();
+                    break;
+            }
+        }
+        void RightPress()
+        {
+            switch (gameState)
+            {
+                case GameState.Playing:
+                case GameState.NotPlaying:
+                    if (!faceSelected)
+                    {
+                        if (selectedTile[0] < width - 1) selectedTile[0]++;
+                        else selectedTile[0] = 0;
+                        if (cantSelectRevealed && !mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
+                        {
+                            bool foundGoodTile = false;
+                            for (int col = selectedTile[0] + 1; col < width; col++)
+                            {
+                                if (mGame.tile[selectedTile[1], col].Hidden)
+                                {
+                                    selectedTile[0] = col;
+                                    foundGoodTile = true;
+                                    break;
+                                }
+                            }
+                            if (!foundGoodTile)
+                            {
+                                for (int col = 0; col <= selectedTile[0]; col++)
+                                {
+                                    if (mGame.tile[selectedTile[1], col].Hidden)
+                                    {
+                                        selectedTile[0] = col;
+                                        foundGoodTile = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case GameState.Menu:
+                    menuComponent.RightClick();
+                    break;
+            }
         }
 
         /// <summary>
@@ -162,234 +596,121 @@ namespace Minesweeper
             }
             if (time > 999) time = 999;
 
-            GamePadState oldPadState = newPadState;
-            newPadState = GamePad.GetState(PlayerIndex.One);
-
             s = skins[selectedSkin];
             menuComponent.Enabled = gameState == GameState.Menu;
             menuComponent.Visible = gameState == GameState.Menu;
             menuComponent.s = this.s;
 
-            switch (gameState)
+            if (gameState == GameState.NotPlaying || gameState == GameState.Playing)
             {
-                case GameState.NotPlaying:
-                case GameState.Playing:
-                    if (newPadState.DPad.Right == ButtonState.Pressed && oldPadState.DPad.Right == ButtonState.Released && !faceSelected)
+                if (scrollRight && !i.RightIsPressed) RightUnhold();
+                if (scrollLeft && !i.LeftIsPressed) LeftUnhold();
+                if (scrollUp && !i.UpIsPressed) UpUnhold();
+                if (scrollDown && !i.DownIsPressed) DownUnhold();
+
+                if (scrollRight)
+                {
+                    if (!lastScrollRight.HasValue)
                     {
-                        if (selectedTile[0] < width - 1) selectedTile[0]++;
-                        else selectedTile[0] = 0;
-                        if (cantSelectRevealed && !mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
+                        RightPress();
+                        lastScrollRight = gameTime.TotalGameTime;
+                    }
+                    else
+                    {
+                        if (Convert.ToSingle(gameTime.TotalGameTime.Subtract(lastScrollRight.Value).TotalSeconds) >= 0.15F)
                         {
-                            bool foundGoodTile = false;
-                            for (int col = selectedTile[0] + 1; col < width; col++)
-                            {
-                                if (mGame.tile[selectedTile[1], col].Hidden)
-                                {
-                                    selectedTile[0] = col;
-                                    foundGoodTile = true;
-                                    break;
-                                }
-                            }
-                            if (!foundGoodTile)
-                            {
-                                for (int col = 0; col <= selectedTile[0]; col++)
-                                {
-                                    if (mGame.tile[selectedTile[1], col].Hidden)
-                                    {
-                                        selectedTile[0] = col;
-                                        foundGoodTile = true;
-                                        break;
-                                    }
-                                }
-                            }
+                            RightPress();
+                            lastScrollRight = gameTime.TotalGameTime;
                         }
                     }
-                    if (newPadState.DPad.Left == ButtonState.Pressed && oldPadState.DPad.Left == ButtonState.Released && !faceSelected)
+                }
+                if (scrollLeft)
+                {
+                    if (!lastScrollLeft.HasValue)
                     {
-                        if (selectedTile[0] == 0) selectedTile[0] = width - 1;
-                        else selectedTile[0]--;
-                        if (cantSelectRevealed && !mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
+                        LeftPress();
+                        lastScrollLeft = gameTime.TotalGameTime;
+                    }
+                    else
+                    {
+                        if (Convert.ToSingle(gameTime.TotalGameTime.Subtract(lastScrollLeft.Value).TotalSeconds) >= 0.15F)
                         {
-                            bool foundGoodTile = false;
-                            for (int col = selectedTile[0] - 1; col >= 0; col--)
-                            {
-                                if (mGame.tile[selectedTile[1], col].Hidden)
-                                {
-                                    selectedTile[0] = col;
-                                    foundGoodTile = true;
-                                    break;
-                                }
-                            }
-                            if (!foundGoodTile)
-                            {
-                                for (int col = width - 1; col >= selectedTile[0]; col--)
-                                {
-                                    if (mGame.tile[selectedTile[1], col].Hidden)
-                                    {
-                                        selectedTile[0] = col;
-                                        foundGoodTile = true;
-                                        break;
-                                    }
-                                }
-                            }
+                            LeftPress();
+                            lastScrollLeft = gameTime.TotalGameTime;
                         }
                     }
-                    if (newPadState.DPad.Down == ButtonState.Pressed && oldPadState.DPad.Down == ButtonState.Released)
+                }
+                if (scrollUp)
+                {
+                    if (!lastScrollUp.HasValue)
                     {
-                        if (faceSelected)
+                        UpPress();
+                        lastScrollUp = gameTime.TotalGameTime;
+                    }
+                    else
+                    {
+                        if (Convert.ToSingle(gameTime.TotalGameTime.Subtract(lastScrollUp.Value).TotalSeconds) >= 0.15F)
                         {
-                            selectedTile[1] = 0;
-                            faceSelected = false;
-                        }
-                        else
-                            if (selectedTile[1] < height - 1) selectedTile[1]++;
-                            else faceSelected = true;
-                        if (cantSelectRevealed && !mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
-                        {
-                            //what to do with a bad tile
-                            bool foundGoodTile = false;
-                            for (int row = selectedTile[1]; row < height; row++)
-                            {
-                                int distance = 100;
-                                int bestTile = 0;
-                                for (int col = 0; col < width; col++)
-                                {
-                                    if (mGame.tile[row, col].Hidden)
-                                    {
-                                        int tempDistance = Math.Abs(selectedTile[0] - col);
-                                        if (tempDistance < distance)
-                                        {
-                                            bestTile = col;
-                                            distance = tempDistance;
-                                        }
-                                        selectedTile[1] = row;
-                                        foundGoodTile = true;
-                                    }
-                                }
-                                if (foundGoodTile)
-                                {
-                                    selectedTile[0] = bestTile;
-                                    break;
-                                }
-                            }
-                            if (!foundGoodTile) faceSelected = true;
+                            UpPress();
+                            lastScrollUp = gameTime.TotalGameTime;
                         }
                     }
-                    if (newPadState.DPad.Up == ButtonState.Pressed && oldPadState.DPad.Up == ButtonState.Released)
+                }
+                if (scrollDown)
+                {
+                    if (!lastScrollDown.HasValue)
                     {
-                        if (faceSelected)
+                        DownPress();
+                        lastScrollDown = gameTime.TotalGameTime;
+                    }
+                    else
+                    {
+                        if (Convert.ToSingle(gameTime.TotalGameTime.Subtract(lastScrollDown.Value).TotalSeconds) >= 0.15F)
                         {
-                            selectedTile[1] = height - 1;
-                            faceSelected = false;
-                        }
-                        else
-                            if (selectedTile[1] == 0) faceSelected = true;
-                            else selectedTile[1]--;
-                        if (cantSelectRevealed && !mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
-                        {
-                            //what to do with a bad tile
-                            bool foundGoodTile = false;
-                            for (int row = selectedTile[1]; row >= 0; row--)
-                            {
-                                int distance = 100;
-                                int bestTile = 0;
-                                for (int col = 0; col < width; col++)
-                                {
-                                    if (mGame.tile[row, col].Hidden)
-                                    {
-                                        int tempDistance = Math.Abs(selectedTile[0] - col);
-                                        if (tempDistance < distance)
-                                        {
-                                            bestTile = col;
-                                            distance = tempDistance;
-                                        }
-                                        selectedTile[1] = row;
-                                        foundGoodTile = true;
-                                    }
-                                }
-                                if (foundGoodTile)
-                                {
-                                    selectedTile[0] = bestTile;
-                                    break;
-                                }
-                            }
-                            if (!foundGoodTile) faceSelected = true;
+                            DownPress();
+                            lastScrollDown = gameTime.TotalGameTime;
                         }
                     }
-                    if (newPadState.Buttons.A == ButtonState.Pressed)
+                }
+
+                if (!faceSelected)
+                {
+                    if ((flagWithPlay && i.CenterIsPressed) || (!flagWithPlay && i.PlayIsPressed)) faceValue = Face.Scared;
+                }
+                if (height > 15)
+                {
+                    if (selectedTile[1] - corner[1] > 10)
                     {
-                        if (!faceSelected & flagWithPlay) faceValue = Face.Scared;
+                        corner[1] = selectedTile[1] - 10;
+                        if (corner[1] + 14 > height - 1) corner[1] = height - 15;
                     }
-                    if (newPadState.Buttons.A == ButtonState.Released && oldPadState.Buttons.A == ButtonState.Pressed)
+                    else
                     {
-                        if (faceSelected) SetGame(height, width, mines);
-                        else
-                            if (flagWithPlay) TileClick();
-                            else TileFlag();
-                    }
-                    if (newPadState.Buttons.B == ButtonState.Pressed)
-                    {
-                        if (!faceSelected & !flagWithPlay) faceValue = Face.Scared;
-                    }
-                    if (newPadState.Buttons.B == ButtonState.Released && oldPadState.Buttons.B == ButtonState.Pressed)
-                    {
-                        if (!faceSelected)
-                            if (flagWithPlay) TileFlag();
-                            else TileClick();
-                    }
-                    if (newPadState.Buttons.Back == ButtonState.Released && oldPadState.Buttons.Back == ButtonState.Pressed)
-                    {
-                        oldGameState = gameState;
-                        gameState = GameState.Menu;
-                        menuComponent.menuState = Menus.Main;
-                    }
-                    if (height > 15)
-                    {
-                        if (selectedTile[1] - corner[1] > 10)
+                        if (corner[1] + 4 > selectedTile[1])
                         {
-                            corner[1] = selectedTile[1] - 10;
-                            if (corner[1] + 14 > height - 1) corner[1] = height - 15;
-                        }
-                        else
-                        {
-                            if (corner[1] + 4 > selectedTile[1])
-                            {
-                                corner[1] = selectedTile[1] - 4;
-                                if (corner[1] < 0) corner[1] = 0;
-                            }
+                            corner[1] = selectedTile[1] - 4;
+                            if (corner[1] < 0) corner[1] = 0;
                         }
                     }
-                    if (width > 14)
+                }
+                if (width > 14)
+                {
+                    if (selectedTile[0] - corner[0] > 9)
                     {
-                        if (selectedTile[0] - corner[0] > 9)
+                        corner[0] = selectedTile[0] - 9;
+                        if (corner[0] + 13 > width - 1) corner[0] = width - 14;
+                    }
+                    else
+                    {
+                        if (corner[0] + 4 > selectedTile[0])
                         {
-                            corner[0] = selectedTile[0] - 9;
-                            if (corner[0] + 13 > width - 1) corner[0] = width - 14;
-                        }
-                        else
-                        {
-                            if (corner[0] + 4 > selectedTile[0])
-                            {
-                                corner[0] = selectedTile[0] - 4;
-                                if (corner[0] < 0) corner[0] = 0;
-                            }
+                            corner[0] = selectedTile[0] - 4;
+                            if (corner[0] < 0) corner[0] = 0;
                         }
                     }
-                    break;
-                case GameState.Lost:
-                case GameState.Won:
-                    if (newPadState.Buttons.A == ButtonState.Pressed && oldPadState.Buttons.A == ButtonState.Released && faceSelected)
-                    {
-                        SetGame(height, width, mines);
-                    }
-                    if (newPadState.Buttons.Back == ButtonState.Released && oldPadState.Buttons.Back == ButtonState.Pressed)
-                    {
-                        oldGameState = gameState;
-                        gameState = GameState.Menu;
-                        menuComponent.menuState = Menus.Main;
-                    }
-                    break;
+                }
             }
+
             base.Update(gameTime);
         }
 
@@ -485,7 +806,7 @@ namespace Minesweeper
                 for (int col = 0; col < width; col++)
                 {
                     Texture2D tile;
-                    if (gameState == GameState.Playing)
+                    if (gameState == GameState.Playing || gameState == GameState.NotPlaying)
                     {
                         if (mGame.tile[row, col].Flagged) tile = s.tFlag;
                         else
@@ -512,6 +833,26 @@ namespace Minesweeper
 
         void TileClick()
         {
+            if (gameState == GameState.NotPlaying)
+            {
+                if (mGame.tile[selectedTile[1], selectedTile[0]].MineHere)
+                {
+                    for (int row = 0; row < height; row++)
+                    {
+                        for (int col = 0; col < width; col++)
+                        {
+                            if (!mGame.tile[row, col].MineHere)
+                            {
+                                mGame.tile[row, col].MineHere = true;
+                                mGame.tile[selectedTile[1], selectedTile[0]].MineHere = false;
+                                break;
+                            }
+                        }
+                        if (!mGame.tile[selectedTile[1], selectedTile[0]].MineHere) break;
+                    }
+                    mGame.GenerateTileNums();
+                }
+            }
             if (gameState != GameState.Playing) gameState = GameState.Playing;
             switch (mGame.SelectedAction(selectedTile[1], selectedTile[0]))
             {
@@ -636,19 +977,112 @@ namespace Minesweeper
 
         void TileFlag()
         {
-            if (gameState != GameState.Playing) gameState = GameState.Playing;
-            if (!(mGame.tile[selectedTile[1], selectedTile[0]].Flagged))
+            //if (gameState != GameState.Playing) gameState = GameState.Playing;
+            if (mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
             {
-                if (mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
+                if (!(mGame.tile[selectedTile[1], selectedTile[0]].Flagged))
                 {
                     mGame.tile[selectedTile[1], selectedTile[0]].Flag();
                     flags--;
                 }
+                else
+                {
+                    mGame.tile[selectedTile[1], selectedTile[0]].Unflag();
+                    flags++;
+                }
+            }
+        }
+
+        void SurroundClick()
+        {
+            int surroundingFlags = 0;
+
+            if (!(selectedTile[1] == 0)) 
+                if (mGame.tile[(selectedTile[1] - 1), selectedTile[0]].Flagged) surroundingFlags++;
+            if (!(selectedTile[0] == 0)) 
+                if (mGame.tile[selectedTile[1], (selectedTile[0] - 1)].Flagged) surroundingFlags++;
+            if (!(selectedTile[1] == 0) & !(selectedTile[0] == 0)) 
+                if (mGame.tile[(selectedTile[1] - 1), (selectedTile[0] - 1)].Flagged) surroundingFlags++;
+            if (!(selectedTile[0] == width - 1)) 
+                if (mGame.tile[selectedTile[1], (selectedTile[0] + 1)].Flagged) surroundingFlags++;
+            if (!(selectedTile[1] == 0) & !(selectedTile[0] == width - 1)) 
+                if (mGame.tile[(selectedTile[1] - 1), (selectedTile[0] + 1)].Flagged) surroundingFlags++;
+            if (!(selectedTile[1] == height - 1)) 
+                if (mGame.tile[(selectedTile[1] + 1), selectedTile[0]].Flagged) surroundingFlags++;
+            if (!(selectedTile[1] == height - 1) & !(selectedTile[0] == 0)) 
+                if (mGame.tile[(selectedTile[1] + 1), (selectedTile[0] - 1)].Flagged) surroundingFlags++;
+            if (!(selectedTile[1] == height - 1) & !(selectedTile[0] == width - 1))
+                if (mGame.tile[(selectedTile[1] + 1), (selectedTile[0] + 1)].Flagged) surroundingFlags++;
+
+            if (surroundingFlags == mGame.tile[selectedTile[1], selectedTile[0]].TileNum)
+            {
+                int[] originalSelectedTile = new int[2];
+                originalSelectedTile[1] = selectedTile[1];
+                originalSelectedTile[0] = selectedTile[0];
+
+                if (!(originalSelectedTile[1] == 0))
+                {
+                    selectedTile[1] = originalSelectedTile[1] - 1;
+                    selectedTile[0] = originalSelectedTile[0];
+                    TileClick();
+                }
+                if (gameState != GameState.Playing) return;
+                if (!(originalSelectedTile[0] == 0))
+                {
+                    selectedTile[1] = originalSelectedTile[1];
+                    selectedTile[0] = originalSelectedTile[0] - 1;
+                    TileClick();
+                }
+                if (gameState != GameState.Playing) return;
+                if (!(originalSelectedTile[1] == 0) & !(originalSelectedTile[0] == 0))
+                {
+                    selectedTile[1] = originalSelectedTile[1] - 1;
+                    selectedTile[0] = originalSelectedTile[0] - 1;
+                    TileClick();
+                }
+                if (gameState != GameState.Playing) return;
+                if (!(originalSelectedTile[0] == width - 1))
+                {
+                    selectedTile[1] = originalSelectedTile[1];
+                    selectedTile[0] = originalSelectedTile[0] + 1;
+                    TileClick();
+                }
+                if (gameState != GameState.Playing) return;
+                if (!(originalSelectedTile[1] == 0) & !(originalSelectedTile[0] == width - 1))
+                {
+                    selectedTile[1] = originalSelectedTile[1] - 1;
+                    selectedTile[0] = originalSelectedTile[0] + 1;
+                    TileClick();
+                }
+                if (gameState != GameState.Playing) return;
+                if (!(originalSelectedTile[1] == height - 1))
+                {
+                    selectedTile[1] = originalSelectedTile[1] + 1;
+                    selectedTile[0] = originalSelectedTile[0];
+                    TileClick();
+                }
+                if (gameState != GameState.Playing) return;
+                if (!(originalSelectedTile[1] == height - 1) & !(originalSelectedTile[0] == 0))
+                {
+                    selectedTile[1] = originalSelectedTile[1] + 1;
+                    selectedTile[0] = originalSelectedTile[0] - 1;
+                    TileClick();
+                }
+                if (gameState != GameState.Playing) return;
+                if (!(originalSelectedTile[1] == height - 1) & !(originalSelectedTile[0] == width - 1))
+                {
+                    selectedTile[1] = originalSelectedTile[1] + 1;
+                    selectedTile[0] = originalSelectedTile[0] + 1;
+                    TileClick();
+                }
+                if (gameState != GameState.Playing) return;
+
+                selectedTile[1] = originalSelectedTile[1];
+                selectedTile[0] = originalSelectedTile[0];
             }
             else
             {
-                mGame.tile[selectedTile[1], selectedTile[0]].Unflag();
-                flags++;
+                faceValue = Face.Happy;
             }
         }
 

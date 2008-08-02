@@ -214,65 +214,6 @@ namespace Minesweeper
                     break;
             }
 
-            if (newPadState.DPad.Down == ButtonState.Pressed && oldPadState.DPad.Down == ButtonState.Released) currentMenu.DownClick();
-            if (newPadState.DPad.Up == ButtonState.Pressed && oldPadState.DPad.Up == ButtonState.Released) currentMenu.UpClick();
-            if (newPadState.Buttons.A == ButtonState.Released && oldPadState.Buttons.A == ButtonState.Pressed) currentMenu.ClickItem();
-            if (newPadState.Buttons.Back == ButtonState.Released && oldPadState.Buttons.Back == ButtonState.Pressed) Back();
-
-            if (menuState == Menus.CustomGame)
-            {
-                if (newPadState.DPad.Right == ButtonState.Pressed && oldPadState.DPad.Right == ButtonState.Released)
-                {
-                    switch (currentMenu.selectedItem)
-                    {
-                        case 0:
-                            tempHeight++;
-                            if (tempHeight > 24) tempHeight = 9;
-                            break;
-                        case 1:
-                            tempWidth++;
-                            if (tempWidth > 30) tempWidth = 9;
-                            break;
-                        case 2:
-                            tempMines++;
-                            if (tempMines > (tempHeight - 1) * (tempWidth - 1)) tempMines = 10;
-                            break;
-                    }
-                }
-                if (newPadState.DPad.Left == ButtonState.Pressed && oldPadState.DPad.Left == ButtonState.Released)
-                {
-                    switch (currentMenu.selectedItem)
-                    {
-                        case 0:
-                            tempHeight--;
-                            if (tempHeight < 9) tempHeight = 24;
-                            break;
-                        case 1:
-                            tempWidth--;
-                            if (tempWidth < 9) tempWidth = 30;
-                            break;
-                        case 2:
-                            tempMines--;
-                            if (tempMines < 10) tempMines = (tempHeight - 1) * (tempWidth - 1);
-                            break;
-                    }
-                }
-            } //end custom game menu special controls
-
-            if (menuState == Menus.Skin && currentMenu.selectedItem == 0)
-            {
-                if (newPadState.DPad.Right == ButtonState.Pressed && oldPadState.DPad.Right == ButtonState.Released)
-                {
-                    if (tempSelectedSkin == game.skins.Count - 1) tempSelectedSkin = 0;
-                    else tempSelectedSkin++;
-                }
-                if (newPadState.DPad.Left == ButtonState.Pressed && oldPadState.DPad.Left == ButtonState.Released)
-                {
-                    if (tempSelectedSkin == 0) tempSelectedSkin = game.skins.Count - 1;
-                    else tempSelectedSkin--;
-                }
-            } //end skin menu special controls
-
             while (currentMenu.items[currentMenu.selectedItem] == null || !currentMenu.items[currentMenu.selectedItem].selectable)
             {
                 if (currentMenu.selectedItem == 5) currentMenu.selectedItem = 0;
@@ -444,7 +385,7 @@ namespace Minesweeper
             tempMines = game.mines;
         }
 
-        void Back()
+        public void Back()
         {
             switch (menuState)
             {
@@ -466,6 +407,69 @@ namespace Minesweeper
                     break;
                 case Menus.Skin:
                     menuState = Menus.Options;
+                    break;
+            }
+        }
+
+
+        public void RightClick()
+        {
+            switch (menuState)
+            {
+                case Menus.CustomGame:
+                    switch (currentMenu.selectedItem)
+                    {
+                        case 0:
+                            tempHeight++;
+                            if (tempHeight > 24) tempHeight = 9;
+                            break;
+                        case 1:
+                            tempWidth++;
+                            if (tempWidth > 30) tempWidth = 9;
+                            break;
+                        case 2:
+                            tempMines++;
+                            if (tempMines > (tempHeight - 1) * (tempWidth - 1)) tempMines = 10;
+                            break;
+                    }
+                    break;
+                case Menus.Skin:
+                    if (currentMenu.selectedItem == 0)
+                    {
+                        if (tempSelectedSkin == game.skins.Count - 1) tempSelectedSkin = 0;
+                        else tempSelectedSkin++;
+                    }
+                    break;
+            }
+        }
+
+        public void LeftClick()
+        {
+            switch (menuState)
+            {
+                case Menus.CustomGame:
+                    switch (currentMenu.selectedItem)
+                    {
+                        case 0:
+                            tempHeight--;
+                            if (tempHeight < 9) tempHeight = 24;
+                            break;
+                        case 1:
+                            tempWidth--;
+                            if (tempWidth < 9) tempWidth = 30;
+                            break;
+                        case 2:
+                            tempMines--;
+                            if (tempMines < 10) tempMines = (tempHeight - 1) * (tempWidth - 1);
+                            break;
+                    }
+                    break;
+                case Menus.Skin:
+                    if (currentMenu.selectedItem == 0)
+                    {
+                        if (tempSelectedSkin == 0) tempSelectedSkin = game.skins.Count - 1;
+                        else tempSelectedSkin--;
+                    }
                     break;
             }
         }
