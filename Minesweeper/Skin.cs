@@ -42,7 +42,7 @@ namespace Minesweeper
             vUncoloredText = uncoloredText;
         }
 
-        public void InitializeTextures(string directory, ContentManager Content)
+        public void InitializeTextures(string directory, ContentManager Content, SpriteFont normal, SpriteFont header, SpriteFont small)
         {
             top = Content.Load<Texture2D>(directory + "/top");
             for (int counter = 0; counter < 10; counter++)
@@ -79,9 +79,9 @@ namespace Minesweeper
             numBox = Content.Load<Texture2D>(directory + "/Menu/number back");
             rightArrow = Content.Load<Texture2D>(directory + "/Menu/right arrow");
             leftArrow = Content.Load<Texture2D>(directory + "/Menu/left arrow");
-            normal = Content.Load<SpriteFont>(directory + "/Fonts/normal");
-            header = Content.Load<SpriteFont>(directory + "/Fonts/header");
-            small = Content.Load<SpriteFont>(directory + "/Fonts/small");
+            this.normal = normal;
+            this.header = header;
+            this.small = small;
 
             if (this.itemsBacked) itemBack = Content.Load<Texture2D>(directory + "/Menu/item back");
             if (this.headersBacked) headerBack = Content.Load<Texture2D>(directory + "/Menu/header back");

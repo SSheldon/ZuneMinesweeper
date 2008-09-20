@@ -25,10 +25,11 @@ namespace Minesweeper
         StorageContainer container;
         MenuComponent menuComponent;
         InputManager i;
-        TouchInputManager tI;
+        Timer rightScrollTimer, leftScrollTimer, upScrollTimer, downScrollTimer;
         Skin s;
         public List<Skin> skins;
         public Texture2D blank;
+        public SpriteFont normal, header, small;
 
         public int height;
         public int width;
@@ -50,10 +51,7 @@ namespace Minesweeper
         public GameState gameState;
         public GameState oldGameState;
         bool faceSelected;
-        public bool resumable;
-        bool scrollRight, scrollLeft, scrollUp, scrollDown;
-        TimeSpan? lastScrollRight, lastScrollLeft, lastScrollUp, lastScrollDown;
-        
+        public bool resumable;        
 
         public Game1()
         {
@@ -61,8 +59,14 @@ namespace Minesweeper
             Content.RootDirectory = "Content";
             i = new InputManager(this);
             this.Components.Add(i);
-            tI = new TouchInputManager(this);
-            this.Components.Add(tI);
+            rightScrollTimer = new Timer(this);
+            this.Components.Add(rightScrollTimer);
+            leftScrollTimer = new Timer(this);
+            this.Components.Add(leftScrollTimer);
+            upScrollTimer = new Timer(this);
+            this.Components.Add(upScrollTimer);
+            downScrollTimer = new Timer(this);
+            this.Components.Add(downScrollTimer);
         }
 
         /// <summary>
@@ -84,8 +88,6 @@ namespace Minesweeper
             bestZune = 999;
             GetBestTimes();
 
-            tI.Enabled = tI.HasTouchpad;
-
             height = 9;
             width = 9;
             mines = 10;
@@ -106,8 +108,7 @@ namespace Minesweeper
             totalTime = 0.0;
             resumable = false;
             skins = new List<Skin>();
-            scrollRight = false;
-            lastScrollRight = null;
+            this.Deactivated += new EventHandler(GameDeactivated);
 
             GetOptions();
             InitializeInput();
@@ -115,8 +116,27 @@ namespace Minesweeper
             base.Initialize();
         }
 
+        void GameDeactivated(object sender, EventArgs e)
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                case GameState.Lost:
+                case GameState.Won:
+                    BackPress();
+                    break;
+            }
+        }
+
         void InitializeInput()
         {
+            i.HoldTime = 0.3F;
+            rightScrollTimer.Interval = 150;
+            leftScrollTimer.Interval = 150;
+            upScrollTimer.Interval = 150;
+            downScrollTimer.Interval = 150;
+
             i.RightPressed += new InputEventHandler(RightPress);
             i.LeftPressed += new InputEventHandler(LeftPress);
             i.DownPressed += new InputEventHandler(DownPress);
@@ -124,7 +144,6 @@ namespace Minesweeper
             i.CenterReleased += new InputEventHandler(CenterRelease);
             i.PlayReleased += new InputEventHandler(PlayRelease);
             i.BackReleased += new InputEventHandler(BackPress);
-            i.HoldTime = 0.3F;
             i.RightHeld += new InputEventHandler(RightHold);
             i.RightHeldReleased += new InputEventHandler(RightUnhold);
             i.LeftHeld += new InputEventHandler(LeftHold);
@@ -133,79 +152,64 @@ namespace Minesweeper
             i.UpHeldReleased += new InputEventHandler(UpUnhold);
             i.DownHeld += new InputEventHandler(DownHold);
             i.DownHeldReleased += new InputEventHandler(DownUnhold);
-            tI.LeftToRightFlick += new FlickEventHandler(RightFlick);
-            tI.RightToLeftFlick += new FlickEventHandler(LeftFlick);
-            tI.DownToUpFlick += new FlickEventHandler(UpFlick);
-            tI.UpToDownFlick += new FlickEventHandler(DownFlick);
+
+            rightScrollTimer.Tick += new InputEventHandler(rightScrollTimer_Tick);
+            leftScrollTimer.Tick += new InputEventHandler(leftScrollTimer_Tick);
+            upScrollTimer.Tick += new InputEventHandler(upScrollTimer_Tick);
+            downScrollTimer.Tick += new InputEventHandler(downScrollTimer_Tick);
         }
 
-        void DownFlick(float duration, TouchpadPosition startPosition, TouchpadPosition endPosition)
+        void downScrollTimer_Tick()
         {
             switch (gameState)
             {
                 case GameState.NotPlaying:
                 case GameState.Playing:
-                    if (!faceSelected)
-                    {
-                        selectedTile[1] = 0;
-                        UpPress();
-                        UpPress();
-                    }
+                    DownPress();
                     break;
             }
         }
-        void UpFlick(float duration, TouchpadPosition startPosition, TouchpadPosition endPosition)
-        {
-            switch (gameState)
-            {
-                case GameState.NotPlaying:
-                case GameState.Playing:
-                    if (!faceSelected)
-                    {
-                        selectedTile[1] = height - 1;
-                        DownPress();
-                        DownPress();
-                    }
-                    break;
-            }
-        }
-        void LeftFlick(float duration, TouchpadPosition startPosition, TouchpadPosition endPosition)
-        {
-            switch (gameState)
-            {
-                case GameState.NotPlaying:
-                case GameState.Playing:
-                    if (!faceSelected)
-                    {
-                        selectedTile[0] = width - 1;
-                        RightPress();
-                    }
-                    break;
-            }
-        }
-        void RightFlick(float duration, TouchpadPosition startPosition, TouchpadPosition endPosition)
-        {
-            switch (gameState)
-            {
-                case GameState.NotPlaying:
-                case GameState.Playing:
-                    if (!faceSelected)
-                    {
-                        selectedTile[0] = 0;
-                        LeftPress();
-                    }
-                    break;
-            }
 
+        void upScrollTimer_Tick()
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    UpPress();
+                    break;
+            }
         }
+
+        void leftScrollTimer_Tick()
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    LeftPress();
+                    break;
+            }
+        }
+
+        void rightScrollTimer_Tick()
+        {
+            switch (gameState)
+            {
+                case GameState.NotPlaying:
+                case GameState.Playing:
+                    RightPress();
+                    break;
+            }
+        }
+
         void DownUnhold()
         {
             switch (gameState)
             {
                 case GameState.NotPlaying:
                 case GameState.Playing:
-                    scrollDown = false;
-                    lastScrollDown = null;
+                    downScrollTimer.Stop();
                     break;
             }
         }
@@ -215,7 +219,8 @@ namespace Minesweeper
             {
                 case GameState.NotPlaying:
                 case GameState.Playing:
-                    scrollDown = true;
+                    DownPress();
+                    downScrollTimer.Start();
                     break;
             }
         }
@@ -225,8 +230,7 @@ namespace Minesweeper
             {
                 case GameState.NotPlaying:
                 case GameState.Playing:
-                    scrollUp = false;
-                    lastScrollUp = null;
+                    upScrollTimer.Stop();
                     break;
             }
         }
@@ -236,7 +240,8 @@ namespace Minesweeper
             {
                 case GameState.NotPlaying:
                 case GameState.Playing:
-                    scrollUp = true;
+                    UpPress();
+                    upScrollTimer.Start();
                     break;
             }
         }
@@ -246,8 +251,7 @@ namespace Minesweeper
             {
                 case GameState.NotPlaying:
                 case GameState.Playing:
-                    scrollLeft = false;
-                    lastScrollLeft = null;
+                    leftScrollTimer.Stop();
                     break;
             }
         }
@@ -257,8 +261,8 @@ namespace Minesweeper
             {
                 case GameState.NotPlaying:
                 case GameState.Playing:
-                    //selectedTile[0] = 0;
-                    scrollLeft = true;
+                    LeftPress();
+                    leftScrollTimer.Start();
                     break;
             }
         }
@@ -268,8 +272,7 @@ namespace Minesweeper
             {
                 case GameState.NotPlaying:
                 case GameState.Playing:
-                    scrollRight = false;
-                    lastScrollRight = null;
+                    rightScrollTimer.Stop();
                     break;
             }
         }
@@ -279,8 +282,8 @@ namespace Minesweeper
             {
                 case GameState.NotPlaying:
                 case GameState.Playing:
-                    //selectedTile[0] = width - 1;
-                    scrollRight = true;
+                    RightPress();
+                    rightScrollTimer.Start();
                     break;
             }
         }
@@ -550,10 +553,13 @@ namespace Minesweeper
 
             // TODO: use this.Content to load your game content here
             blank = Content.Load<Texture2D>("blank");
+            normal = Content.Load<SpriteFont>("normal");
+            header = Content.Load<SpriteFont>("header");
+            small = Content.Load<SpriteFont>("small");
             foreach (String directory in Directory.GetDirectories(Path.Combine(StorageContainer.TitleLocation, Content.RootDirectory)))
             {
                 Skin skin = Content.Load<Skin>(directory + "/skinfo");
-                skin.InitializeTextures(directory, Content);
+                skin.InitializeTextures(directory, Content, normal, header, small);
                 skins.Add(skin);                
             }
             if (selectedSkin > skins.Count - 1) selectedSkin = 0;
@@ -601,78 +607,13 @@ namespace Minesweeper
             menuComponent.Visible = gameState == GameState.Menu;
             menuComponent.s = this.s;
 
+            if (rightScrollTimer.Enabled && gameState != GameState.Playing && gameState != GameState.NotPlaying) rightScrollTimer.Stop();
+            if (leftScrollTimer.Enabled && gameState != GameState.Playing && gameState != GameState.NotPlaying) leftScrollTimer.Stop();
+            if (upScrollTimer.Enabled && gameState != GameState.Playing && gameState != GameState.NotPlaying) upScrollTimer.Stop();
+            if (downScrollTimer.Enabled && gameState != GameState.Playing && gameState != GameState.NotPlaying) downScrollTimer.Stop();
+
             if (gameState == GameState.NotPlaying || gameState == GameState.Playing)
             {
-                if (scrollRight && !i.RightIsPressed) RightUnhold();
-                if (scrollLeft && !i.LeftIsPressed) LeftUnhold();
-                if (scrollUp && !i.UpIsPressed) UpUnhold();
-                if (scrollDown && !i.DownIsPressed) DownUnhold();
-
-                if (scrollRight)
-                {
-                    if (!lastScrollRight.HasValue)
-                    {
-                        RightPress();
-                        lastScrollRight = gameTime.TotalGameTime;
-                    }
-                    else
-                    {
-                        if (Convert.ToSingle(gameTime.TotalGameTime.Subtract(lastScrollRight.Value).TotalSeconds) >= 0.15F)
-                        {
-                            RightPress();
-                            lastScrollRight = gameTime.TotalGameTime;
-                        }
-                    }
-                }
-                if (scrollLeft)
-                {
-                    if (!lastScrollLeft.HasValue)
-                    {
-                        LeftPress();
-                        lastScrollLeft = gameTime.TotalGameTime;
-                    }
-                    else
-                    {
-                        if (Convert.ToSingle(gameTime.TotalGameTime.Subtract(lastScrollLeft.Value).TotalSeconds) >= 0.15F)
-                        {
-                            LeftPress();
-                            lastScrollLeft = gameTime.TotalGameTime;
-                        }
-                    }
-                }
-                if (scrollUp)
-                {
-                    if (!lastScrollUp.HasValue)
-                    {
-                        UpPress();
-                        lastScrollUp = gameTime.TotalGameTime;
-                    }
-                    else
-                    {
-                        if (Convert.ToSingle(gameTime.TotalGameTime.Subtract(lastScrollUp.Value).TotalSeconds) >= 0.15F)
-                        {
-                            UpPress();
-                            lastScrollUp = gameTime.TotalGameTime;
-                        }
-                    }
-                }
-                if (scrollDown)
-                {
-                    if (!lastScrollDown.HasValue)
-                    {
-                        DownPress();
-                        lastScrollDown = gameTime.TotalGameTime;
-                    }
-                    else
-                    {
-                        if (Convert.ToSingle(gameTime.TotalGameTime.Subtract(lastScrollDown.Value).TotalSeconds) >= 0.15F)
-                        {
-                            DownPress();
-                            lastScrollDown = gameTime.TotalGameTime;
-                        }
-                    }
-                }
-
                 if (!faceSelected)
                 {
                     if ((flagWithPlay && i.CenterIsPressed) || (!flagWithPlay && i.PlayIsPressed)) faceValue = Face.Scared;

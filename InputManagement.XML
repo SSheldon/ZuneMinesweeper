@@ -4,6 +4,47 @@
         <name>InputManagement</name>
     </assembly>
     <members>
+        <member name="T:InputManagement.Timer">
+            <summary>
+            This is a game component that implements a timer that raises an event at user-defined intervals.
+            </summary>
+        </member>
+        <member name="M:InputManagement.Timer.Initialize">
+            <summary>
+            Allows the game component to perform any initialization it needs to before starting to run.
+            </summary>
+        </member>
+        <member name="M:InputManagement.Timer.Update(Microsoft.Xna.Framework.GameTime)">
+            <summary>
+            Allows the game component to update itself.
+            </summary>
+            <param name="gameTime">Provides a snapshot of timing values.</param>
+        </member>
+        <member name="M:InputManagement.Timer.Start">
+            <summary>
+            Starts the timer.
+            </summary>
+        </member>
+        <member name="M:InputManagement.Timer.Stop">
+            <summary>
+            Stops the timer.
+            </summary>
+        </member>
+        <member name="E:InputManagement.Timer.Tick">
+            <summary>
+            Occurs when the specified timer interval has elapsed and the timer is enabled.
+            </summary>
+        </member>
+        <member name="P:InputManagement.Timer.Interval">
+            <summary>
+            Gets or sets the time, in milliseconds, before the Tick event is raised relative to the last occurrence of the Tick event. (1000 milliseconds per 1 second)
+            </summary>
+        </member>
+        <member name="P:InputManagement.Timer.Ticks">
+            <summary>
+            Gets the number of times the Tick event has been raised since the timer was started.
+            </summary>
+        </member>
         <member name="T:InputManagement.TouchInputManager">
             <summary>
             A game component that provides information about the state of the Zune's touchpad and raises events from player input.
@@ -58,6 +99,11 @@
         <member name="E:InputManagement.TouchInputManager.TouchpadNotFlickedUntouched">
             <summary>
             Raised when the user removes their finger from the touchpad and they have not executed a flick.
+            </summary>
+        </member>
+        <member name="E:InputManagement.TouchInputManager.TouchpadNotPressedUntouched">
+            <summary>
+            Raised when the user removes their finger from the touchpad and they have not pressed the touchpad.
             </summary>
         </member>
         <member name="E:InputManagement.TouchInputManager.TouchpadFlicked">
@@ -195,28 +241,9 @@
             Gets or sets the amount of time (in seconds) that the touchpad must be held to raise a TouchpadHeld event.
             </summary>
         </member>
-        <member name="T:InputManagement.InputEventHandler">
+        <member name="P:InputManagement.TouchInputManager.TouchpadDeadZone">
             <summary>
-            Represents the method that will handle an input event. 
-            </summary>
-        </member>
-        <member name="T:InputManagement.FlickEventHandler">
-            <summary>
-            Represents the method that will handle a flick event.
-            </summary>
-            <param name="duration">The amount of time (in seconds) that the flick lasted.</param>
-            <param name="startPosition">The position on the touch pad at which the flick began.</param>
-            <param name="endPosition">The position on the touch pad at which the flick ended.</param>
-        </member>
-        <member name="T:InputManagement.TouchEventHandler">
-            <summary>
-            Represents the method that will handle a touch pad event.
-            </summary>
-            <param name="position">The position on the touch pad at which the event was raised.</param>
-        </member>
-        <member name="T:InputManagement.TouchpadSection">
-            <summary>
-            Defines the sections of the Zune touchpad.
+            Gets or sets the type of dead zone processing to apply to the Zune touchpad.
             </summary>
         </member>
         <member name="T:InputManagement.TouchpadPosition">
@@ -253,6 +280,37 @@
             <summary>
             Gets a value describing what vertical section of the Zune touchpad the position is on.  
             </summary>
+        </member>
+        <member name="P:InputManagement.TouchpadPosition.Angle">
+            <summary>
+            Gets the measure of the angle (in radians) that is formed if a line drawn between the position 
+            and the center of the touchpad intersects with a line drawn between the center of the touchpad and the
+            top of the touchpad. (A position on the up section of the touchpad would be 0; a position on the right would be pi/2)
+            </summary>
+        </member>
+        <member name="T:InputManagement.TouchpadSection">
+            <summary>
+            Defines the sections of the Zune touchpad.
+            </summary>
+        </member>
+        <member name="T:InputManagement.InputEventHandler">
+            <summary>
+            Represents the method that will handle an input event. 
+            </summary>
+        </member>
+        <member name="T:InputManagement.FlickEventHandler">
+            <summary>
+            Represents the method that will handle a flick event.
+            </summary>
+            <param name="duration">The amount of time (in seconds) that the flick lasted.</param>
+            <param name="startPosition">The position on the touch pad at which the flick began.</param>
+            <param name="endPosition">The position on the touch pad at which the flick ended.</param>
+        </member>
+        <member name="T:InputManagement.TouchEventHandler">
+            <summary>
+            Represents the method that will handle a touch pad event.
+            </summary>
+            <param name="position">The position on the touch pad at which the event was raised.</param>
         </member>
         <member name="T:InputManagement.InputManager">
             <summary>

@@ -88,8 +88,8 @@ namespace Minesweeper
             newGame = new MenuItem("New Game");
             newGame.itemClicked += new ItemClick(NewGameClick);
             mainMenu.Add(1, ref newGame);
-            music = new MenuItem("Music", false);
-            music.itemClicked += new ItemClick(DoNothing);
+            music = new MenuItem("Music");
+            music.itemClicked += new ItemClick(MusicClick);
             mainMenu.Add(2, ref music);
             bestTimes = new MenuItem("Best Times");
             bestTimes.itemClicked += new ItemClick(BestTimesClick);
@@ -337,6 +337,11 @@ namespace Minesweeper
             game.gameState = game.oldGameState;
             this.Enabled = false;
             this.Visible = false;
+        }
+
+        void MusicClick()
+        {
+            Guide.Show();
         }
 
         void NewGameClick()
