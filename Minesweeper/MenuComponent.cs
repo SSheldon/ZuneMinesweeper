@@ -21,14 +21,14 @@ namespace Minesweeper
         public Menus menuState;
         int tempHeight, tempWidth, tempMines;
         int tempSelectedSkin, oldSelectedSkin;
-        bool oldCantSelectRevealed, oldFlagWithPlay;
+        bool oldCantSelectRevealed, oldFlagWithPlay, oldUseTouch;
 
         Menu mainMenu;
         MenuItem resume, newGame, music, bestTimes, options, exit;
         Menu newGameMenu;
         MenuItem beginner, intermediate, expert, zune, custom, back;
         Menu optionsMenu;
-        MenuItem cantSelectRevealedMI, flagButton, changeSkin;
+        MenuItem cantSelectRevealedMI, flagButton, changeSkin, useTouchMI;
         Menu customGameMenu;
         MenuItem heightMI, widthMI, minesMI, ok;
         Menu bestTimesMenu;
@@ -128,9 +128,12 @@ namespace Minesweeper
             flagButton = new MenuItem("Flag tiles with Play button", true, true, true);
             flagButton.itemClicked += new ItemClick(FlagButtonClick);
             optionsMenu.Add(1, ref flagButton);
+            useTouchMI = new MenuItem("Touch control off", game.ti.HasTouchpad, game.ti.HasTouchpad, true);
+            useTouchMI.itemClicked += new ItemClick(UseTouchClick);
+            optionsMenu.Add(2, ref useTouchMI);
             changeSkin = new MenuItem("Change Skin");
             changeSkin.itemClicked += new ItemClick(ChangeSkinClick);
-            optionsMenu.Add(2, ref changeSkin);
+            optionsMenu.Add(3, ref changeSkin);
             optionsMenu.Add(5, ref back);
 
             customGameMenu = new Menu("Custom Game:");
@@ -185,6 +188,7 @@ namespace Minesweeper
             resume.colored = game.resumable;
             cantSelectRevealedMI.text = game.cantSelectRevealed ? "Revealed tiles can't be selected" : "Revealed tiles can be selected";
             flagButton.text = game.flagWithPlay ? "Flag tiles with Play button" : "Flag tiles with Center button";
+            useTouchMI.text = game.useTouch ? "Touch control on" : "Touch control off";
             skinMI.text = game.skins[tempSelectedSkin].name;
 
             if (menuState == Menus.CustomGame && tempMines > (tempHeight - 1) * (tempWidth - 1)) tempMines = (tempHeight - 1) * (tempWidth - 1);
@@ -354,6 +358,7 @@ namespace Minesweeper
             menuState = Menus.Options;
             oldCantSelectRevealed = game.cantSelectRevealed;
             oldFlagWithPlay = game.flagWithPlay;
+            oldUseTouch = game.useTouch;
             oldSelectedSkin = game.selectedSkin;
         }
 
@@ -404,7 +409,7 @@ namespace Minesweeper
                     menuState = Menus.NewGame;
                     break;
                 case Menus.Options:
-                    if (oldCantSelectRevealed != game.cantSelectRevealed || oldFlagWithPlay != game.flagWithPlay || oldSelectedSkin != game.selectedSkin) game.SetOptions();
+                    if (oldCantSelectRevealed != game.cantSelectRevealed || oldFlagWithPlay != game.flagWithPlay || oldUseTouch != game.useTouch || oldSelectedSkin != game.selectedSkin) game.SetOptions();
                     menuState = Menus.Main;
                     break;
                 case Menus.BestTimes:
@@ -487,6 +492,11 @@ namespace Minesweeper
         void FlagButtonClick()
         {
             game.flagWithPlay = !game.flagWithPlay;
+        }
+
+        void UseTouchClick()
+        {
+            game.useTouch = !game.useTouch;
         }
 
         void ChangeSkinClick()

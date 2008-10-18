@@ -25,6 +25,7 @@ namespace Minesweeper
         StorageContainer container;
         MenuComponent menuComponent;
         InputManager i;
+        public TouchInputManager ti;
         Timer rightScrollTimer, leftScrollTimer, upScrollTimer, downScrollTimer;
         Skin s;
         public List<Skin> skins;
@@ -36,6 +37,7 @@ namespace Minesweeper
         public int mines;
         public bool cantSelectRevealed;
         public bool flagWithPlay;
+        public bool useTouch;
         public int bestBeginner, bestIntermediate, bestExpert, bestZune;
         public int selectedSkin;
 
@@ -51,7 +53,9 @@ namespace Minesweeper
         public GameState gameState;
         public GameState oldGameState;
         bool faceSelected;
-        public bool resumable;        
+        public bool resumable;
+        int hZone, vZone;
+        TimeSpan lastUpdate, lastMove;
 
         public Game1()
         {
@@ -59,6 +63,8 @@ namespace Minesweeper
             Content.RootDirectory = "Content";
             i = new InputManager(this);
             this.Components.Add(i);
+            ti = new TouchInputManager(this);
+            this.Components.Add(ti);
             rightScrollTimer = new Timer(this);
             this.Components.Add(rightScrollTimer);
             leftScrollTimer = new Timer(this);
@@ -93,6 +99,7 @@ namespace Minesweeper
             mines = 10;
             cantSelectRevealed = false;
             flagWithPlay = true;
+            useTouch = false;
             selectedSkin = 0;
             flags = mines;
             gameState = GameState.Menu;
@@ -109,6 +116,8 @@ namespace Minesweeper
             resumable = false;
             skins = new List<Skin>();
             this.Deactivated += new EventHandler(GameDeactivated);
+            hZone = 0;
+            vZone = 0;
 
             GetOptions();
             InitializeInput();
@@ -159,6 +168,7 @@ namespace Minesweeper
             downScrollTimer.Tick += new InputEventHandler(downScrollTimer_Tick);
         }
 
+        #region InputMethods
         void downScrollTimer_Tick()
         {
             switch (gameState)
@@ -338,7 +348,7 @@ namespace Minesweeper
                         {
                             if (mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
                             {
-                                TileClick();
+                                if (lastUpdate.Subtract(lastMove).TotalMilliseconds > 200) TileClick();
                             }
                             else
                             {
@@ -358,6 +368,7 @@ namespace Minesweeper
         }
         void UpPress()
         {
+            lastMove = lastUpdate;
             switch (gameState)
             {
                 case GameState.NotPlaying:
@@ -409,6 +420,7 @@ namespace Minesweeper
         }
         void DownPress()
         {
+            lastMove = lastUpdate;
             switch (gameState)
             {
                 case GameState.NotPlaying:
@@ -459,6 +471,7 @@ namespace Minesweeper
         }
         void LeftPress()
         {
+            lastMove = lastUpdate;
             switch (gameState)
             {
                 case GameState.Playing:
@@ -501,6 +514,7 @@ namespace Minesweeper
         }
         void RightPress()
         {
+            lastMove = lastUpdate;
             switch (gameState)
             {
                 case GameState.Playing:
@@ -541,6 +555,7 @@ namespace Minesweeper
                     break;
             }
         }
+        #endregion
 
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
@@ -595,6 +610,7 @@ namespace Minesweeper
             //    this.Exit();
 
             // TODO: Add your update logic here
+            lastUpdate = gameTime.TotalGameTime;
             if (gameState == GameState.Playing)
             {
                 totalTime += gameTime.ElapsedGameTime.TotalSeconds;
@@ -612,12 +628,34 @@ namespace Minesweeper
             if (upScrollTimer.Enabled && gameState != GameState.Playing && gameState != GameState.NotPlaying) upScrollTimer.Stop();
             if (downScrollTimer.Enabled && gameState != GameState.Playing && gameState != GameState.NotPlaying) downScrollTimer.Stop();
 
+            //begin touch code
+            if (useTouch)
+            {
+                int oldHZone = hZone;
+                hZone = GetHZone();
+                int oldVZone = vZone;
+                vZone = GetVZone();
+                if (hZone != 0 && oldHZone != 0 && hZone != oldHZone)
+                {
+                    if (hZone > oldHZone) RightPress();
+                    else
+                        if (hZone < oldHZone) LeftPress();
+                }
+                if (vZone != 0 && oldVZone != 0 && vZone != oldVZone)
+                {
+                    if (vZone > oldVZone) UpPress();
+                    else
+                        if (vZone < oldVZone) DownPress();
+                }
+            }
+            //end touch code
+
             if (gameState == GameState.NotPlaying || gameState == GameState.Playing)
             {
                 if (!faceSelected)
-                {
                     if ((flagWithPlay && i.CenterIsPressed) || (!flagWithPlay && i.PlayIsPressed)) faceValue = Face.Scared;
-                }
+                if (faceValue == Face.Scared && (flagWithPlay && !i.CenterIsPressed) || (!flagWithPlay && !i.PlayIsPressed))
+                    faceValue = Face.Happy;
                 if (height > 15)
                 {
                     if (selectedTile[1] - corner[1] > 10)
@@ -655,6 +693,46 @@ namespace Minesweeper
             base.Update(gameTime);
         }
 
+        int GetHZone()
+        {
+            if (!ti.TouchpadIsTouched) return 0;
+            if (ti.TouchedPosition.HorizontalPosition <= -0.7F)
+                return 1;
+            if (ti.TouchedPosition.HorizontalPosition > -0.7F && ti.TouchedPosition.HorizontalPosition <= -0.4F)
+                return 2;
+            if (ti.TouchedPosition.HorizontalPosition > -0.4F && ti.TouchedPosition.HorizontalPosition < 0)
+                return 3;
+            if (ti.TouchedPosition.HorizontalPosition == 0)
+                return 4;
+            if (ti.TouchedPosition.HorizontalPosition > 0 && ti.TouchedPosition.HorizontalPosition < 0.4F)
+                return 5;
+            if (ti.TouchedPosition.HorizontalPosition >= 0.04F && ti.TouchedPosition.HorizontalPosition < 0.7F)
+                return 6;
+            if (ti.TouchedPosition.HorizontalPosition >= 0.7F)
+                return 7;
+            return 0;
+        }
+
+        int GetVZone()
+        {
+            if (!ti.TouchpadIsTouched) return 0;
+            if (ti.TouchedPosition.VerticalPosition <= -0.7F)
+                return 1;
+            if (ti.TouchedPosition.VerticalPosition > -0.7F && ti.TouchedPosition.VerticalPosition <= -0.4F)
+                return 2;
+            if (ti.TouchedPosition.VerticalPosition > -0.4F && ti.TouchedPosition.VerticalPosition < 0)
+                return 3;
+            if (ti.TouchedPosition.VerticalPosition == 0)
+                return 4;
+            if (ti.TouchedPosition.VerticalPosition > 0 && ti.TouchedPosition.VerticalPosition < 0.4F)
+                return 5;
+            if (ti.TouchedPosition.VerticalPosition >= 0.04F && ti.TouchedPosition.VerticalPosition < 0.7F)
+                return 6;
+            if (ti.TouchedPosition.VerticalPosition >= 0.7F)
+                return 7;
+            return 0;
+        }
+
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
@@ -680,6 +758,7 @@ namespace Minesweeper
             base.Draw(gameTime);
         }
 
+        #region DrawingMethods
         void DrawBackground(SpriteBatch batch)
         {
             batch.Draw(s.top, new Rectangle(0, 0, 240, 56), Color.White);
@@ -771,6 +850,7 @@ namespace Minesweeper
                 }
             }
         }
+        #endregion
 
         void TileClick()
         {
@@ -1127,10 +1207,19 @@ namespace Minesweeper
             {
                 BinaryReader dataFile;
                 dataFile = new BinaryReader(new FileStream(Path.Combine(container.Path, "options.dat"), FileMode.Open));
-                cantSelectRevealed = dataFile.ReadBoolean();
-                flagWithPlay = dataFile.ReadBoolean();
-                selectedSkin = dataFile.ReadInt32();
-                dataFile.Close();
+                try
+                {
+                    cantSelectRevealed = dataFile.ReadBoolean();
+                    flagWithPlay = dataFile.ReadBoolean();
+                    selectedSkin = dataFile.ReadInt32();
+                    useTouch = dataFile.ReadBoolean();
+                    dataFile.Close();
+                }
+                catch (EndOfStreamException e)
+                {
+                    dataFile.Close();
+                    SetOptions();
+                }
             }
             else SetOptions();
         }
@@ -1142,6 +1231,7 @@ namespace Minesweeper
             dataFile.Write(cantSelectRevealed);
             dataFile.Write(flagWithPlay);
             dataFile.Write(selectedSkin);
+            dataFile.Write(useTouch);
             dataFile.Close();
         }
     }
