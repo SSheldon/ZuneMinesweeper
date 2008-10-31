@@ -830,20 +830,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="header.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Name>header</Name>
-    </None>
-    <None Include="normal.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Name>normal</Name>
-    </None>
-    <None Include="small.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Name>small</Name>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Gray\Borders\B.png">
       <Name>B</Name>
       <Importer>TextureImporter</Importer>
@@ -1094,6 +1080,20 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="header.xnb">
+      <Name>header</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="normal.xnb">
+      <Name>normal</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="small.xnb">
+      <Name>small</Name>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\v3.0\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
