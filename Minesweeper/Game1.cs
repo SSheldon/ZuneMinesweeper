@@ -119,7 +119,6 @@ namespace Minesweeper
             hZone = 0;
             vZone = 0;
 
-            GetOptions();
             InitializeInput();
             
             base.Initialize();
@@ -592,6 +591,10 @@ namespace Minesweeper
 
         protected override void BeginRun()
         {
+            GetOptions();
+            if (selectedSkin > skins.Count - 1) selectedSkin = 0;
+            s = skins[selectedSkin];
+
             menuComponent = new MenuComponent(this, ref s);
             this.Components.Add(menuComponent);
             menuComponent.Enabled = false;
@@ -1221,7 +1224,14 @@ namespace Minesweeper
                     SetOptions();
                 }
             }
-            else SetOptions();
+            else
+            {
+                for (int counter = 0; counter < skins.Count - 1; counter++)
+                {
+                    if (skins[counter].name == "Blue") selectedSkin = counter;
+                }
+                SetOptions();
+            }
         }
 
         public void SetOptions()
