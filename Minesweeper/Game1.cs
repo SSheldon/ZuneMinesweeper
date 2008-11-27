@@ -18,6 +18,7 @@ namespace Minesweeper
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
+        #region fields
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         MinesweeperGame mGame;
@@ -56,6 +57,7 @@ namespace Minesweeper
         public bool resumable;
         int hZone, vZone;
         TimeSpan lastUpdate, lastMove;
+        #endregion
 
         public Game1()
         {
@@ -522,6 +524,7 @@ namespace Minesweeper
                     {
                         if (selectedTile[0] < width - 1) selectedTile[0]++;
                         else selectedTile[0] = 0;
+                        //begin code for can't select revealed
                         if (cantSelectRevealed && !mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
                         {
                             bool foundGoodTile = false;
@@ -547,6 +550,7 @@ namespace Minesweeper
                                 }
                             }
                         }
+                        //end code for can't select revealed
                     }
                     break;
                 case GameState.Menu:
@@ -638,17 +642,42 @@ namespace Minesweeper
                 hZone = GetHZone();
                 int oldVZone = vZone;
                 vZone = GetVZone();
-                if (hZone != 0 && oldHZone != 0 && hZone != oldHZone)
+                if (hZone != 0 && oldHZone != 0 && hZone != oldHZone && !faceSelected)
                 {
-                    if (hZone > oldHZone) RightPress();
+                    if (hZone > oldHZone)
+                    {
+
+                        int oldSelectedColumn = selectedTile[0];
+                        RightPress();
+                        //if movement moves you from the right side to the left side, undo it
+                        if (selectedTile[0] < oldSelectedColumn) LeftPress();
+                    }
                     else
-                        if (hZone < oldHZone) LeftPress();
+                        if (hZone < oldHZone)
+                        {
+                            int oldSelectedColumn = selectedTile[0];
+                            LeftPress();
+                            //if movement moves you from the left side to the right side, undo it
+                            if (selectedTile[0] > oldSelectedColumn) RightPress();
+                        }
                 }
-                if (vZone != 0 && oldVZone != 0 && vZone != oldVZone)
+                if (vZone != 0 && oldVZone != 0 && vZone != oldVZone && !faceSelected)
                 {
-                    if (vZone > oldVZone) UpPress();
+                    if (vZone > oldVZone)
+                    {
+                        bool faceWasSelected = faceSelected;
+                        UpPress();
+                        //if movement moves you onto or off of the face, undo it
+                        if (faceSelected != faceWasSelected) DownPress();
+                    }
                     else
-                        if (vZone < oldVZone) DownPress();
+                        if (vZone < oldVZone)
+                        {
+                            bool faceWasSelected = faceSelected;
+                            DownPress();
+                            //if movement moves you onto or off of the face, undo it
+                            if (faceSelected != faceWasSelected) UpPress();
+                        }
                 }
             }
             //end touch code
