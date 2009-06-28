@@ -21,7 +21,7 @@ namespace Minesweeper
         #region fields
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        MinesweeperGame mGame;
+        Field field;
         StorageDevice storageDevice;
         StorageContainer container;
         MenuComponent menuComponent;
@@ -113,7 +113,7 @@ namespace Minesweeper
             selectedTile[1] = 0;
             corner[0] = 0;
             corner[1] = 0;
-            mGame = new MinesweeperGame(height, width, mines);
+            field = new Field(height, width, mines);
             totalTime = 0.0;
             resumable = false;
             skins = new List<Skin>();
@@ -325,7 +325,7 @@ namespace Minesweeper
                         if (flagWithPlay) TileFlag();
                         else
                         {
-                            if (mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
+                            if (field.tiles[selectedTile[1], selectedTile[0]].Hidden)
                             {
                                 TileClick();
                             }
@@ -347,7 +347,7 @@ namespace Minesweeper
                     else
                         if (flagWithPlay)
                         {
-                            if (mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
+                            if (field.tiles[selectedTile[1], selectedTile[0]].Hidden)
                             {
                                 if (lastUpdate.Subtract(lastMove).TotalMilliseconds > 200) TileClick();
                             }
@@ -382,7 +382,7 @@ namespace Minesweeper
                     else
                         if (selectedTile[1] == 0) faceSelected = true;
                         else selectedTile[1]--;
-                    if (cantSelectRevealed && !mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
+                    if (cantSelectRevealed && !field.tiles[selectedTile[1], selectedTile[0]].Hidden)
                     {
                         //what to do with a bad tile
                         bool foundGoodTile = false;
@@ -392,7 +392,7 @@ namespace Minesweeper
                             int bestTile = 0;
                             for (int col = 0; col < width; col++)
                             {
-                                if (mGame.tile[row, col].Hidden)
+                                if (field.tiles[row, col].Hidden)
                                 {
                                     int tempDistance = Math.Abs(selectedTile[0] - col);
                                     if (tempDistance < distance)
@@ -434,7 +434,7 @@ namespace Minesweeper
                     else
                         if (selectedTile[1] < height - 1) selectedTile[1]++;
                         else faceSelected = true;
-                    if (cantSelectRevealed && !mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
+                    if (cantSelectRevealed && !field.tiles[selectedTile[1], selectedTile[0]].Hidden)
                     {
                         //what to do with a bad tile
                         bool foundGoodTile = false;
@@ -444,7 +444,7 @@ namespace Minesweeper
                             int bestTile = 0;
                             for (int col = 0; col < width; col++)
                             {
-                                if (mGame.tile[row, col].Hidden)
+                                if (field.tiles[row, col].Hidden)
                                 {
                                     int tempDistance = Math.Abs(selectedTile[0] - col);
                                     if (tempDistance < distance)
@@ -481,12 +481,12 @@ namespace Minesweeper
                     {
                         if (selectedTile[0] == 0) selectedTile[0] = width - 1;
                         else selectedTile[0]--;
-                        if (cantSelectRevealed && !mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
+                        if (cantSelectRevealed && !field.tiles[selectedTile[1], selectedTile[0]].Hidden)
                         {
                             bool foundGoodTile = false;
                             for (int col = selectedTile[0] - 1; col >= 0; col--)
                             {
-                                if (mGame.tile[selectedTile[1], col].Hidden)
+                                if (field.tiles[selectedTile[1], col].Hidden)
                                 {
                                     selectedTile[0] = col;
                                     foundGoodTile = true;
@@ -497,7 +497,7 @@ namespace Minesweeper
                             {
                                 for (int col = width - 1; col >= selectedTile[0]; col--)
                                 {
-                                    if (mGame.tile[selectedTile[1], col].Hidden)
+                                    if (field.tiles[selectedTile[1], col].Hidden)
                                     {
                                         selectedTile[0] = col;
                                         foundGoodTile = true;
@@ -525,12 +525,12 @@ namespace Minesweeper
                         if (selectedTile[0] < width - 1) selectedTile[0]++;
                         else selectedTile[0] = 0;
                         //begin code for can't select revealed
-                        if (cantSelectRevealed && !mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
+                        if (cantSelectRevealed && !field.tiles[selectedTile[1], selectedTile[0]].Hidden)
                         {
                             bool foundGoodTile = false;
                             for (int col = selectedTile[0] + 1; col < width; col++)
                             {
-                                if (mGame.tile[selectedTile[1], col].Hidden)
+                                if (field.tiles[selectedTile[1], col].Hidden)
                                 {
                                     selectedTile[0] = col;
                                     foundGoodTile = true;
@@ -541,7 +541,7 @@ namespace Minesweeper
                             {
                                 for (int col = 0; col <= selectedTile[0]; col++)
                                 {
-                                    if (mGame.tile[selectedTile[1], col].Hidden)
+                                    if (field.tiles[selectedTile[1], col].Hidden)
                                     {
                                         selectedTile[0] = col;
                                         foundGoodTile = true;
@@ -860,23 +860,23 @@ namespace Minesweeper
                     Texture2D tile;
                     if (gameState == GameState.Playing || gameState == GameState.NotPlaying)
                     {
-                        if (mGame.tile[row, col].Flagged) tile = s.tFlag;
+                        if (field.tiles[row, col].Flagged) tile = s.tFlag;
                         else
-                            if (mGame.tile[row, col].Hidden) tile = s.tHidden;
-                            else tile = s.t[mGame.tile[row, col].TileNum];
+                            if (field.tiles[row, col].Hidden) tile = s.tHidden;
+                            else tile = s.t[field.tiles[row, col].Number];
                     }
                     else
                     {
-                        if (mGame.tile[row, col].Flagged & !mGame.tile[row, col].MineHere) tile = s.tNotMine;
+                        if (field.tiles[row, col].Flagged & !field.tiles[row, col].Mined) tile = s.tNotMine;
                         else
-                            if (mGame.tile[row, col].Flagged) tile = s.tFlag;
+                            if (field.tiles[row, col].Flagged) tile = s.tFlag;
                             else
-                                if (mGame.tile[row, col].Hidden) tile = s.tHidden;
+                                if (field.tiles[row, col].Hidden) tile = s.tHidden;
                                 else
                                     if (row == selectedMine[1] && col == selectedMine[0] && gameState == GameState.Lost) tile = s.tClickedMine;
                                     else
-                                        if (mGame.tile[row, col].MineHere) tile = s.tMine;
-                                        else tile = s.t[mGame.tile[row, col].TileNum];
+                                        if (field.tiles[row, col].Mined) tile = s.tMine;
+                                        else tile = s.t[field.tiles[row, col].Number];
                     }
                     batch.Draw(tile, new Rectangle(8 + col * 16 - corner[0] * 16, 64 + row * 16 - corner[1] * 16, 16, 16), Color.White);
                 }
@@ -886,106 +886,32 @@ namespace Minesweeper
 
         void TileClick()
         {
-            if (gameState == GameState.NotPlaying)
-            {
-                if (mGame.tile[selectedTile[1], selectedTile[0]].MineHere)
-                {
-                    for (int row = 0; row < height; row++)
-                    {
-                        for (int col = 0; col < width; col++)
-                        {
-                            if (!mGame.tile[row, col].MineHere)
-                            {
-                                mGame.tile[row, col].MineHere = true;
-                                mGame.tile[selectedTile[1], selectedTile[0]].MineHere = false;
-                                break;
-                            }
-                        }
-                        if (!mGame.tile[selectedTile[1], selectedTile[0]].MineHere) break;
-                    }
-                    mGame.GenerateTileNums();
-                }
-            }
+            if (gameState == GameState.NotPlaying) field.MoveMine(selectedTile[1], selectedTile[0]);
             if (gameState != GameState.Playing) gameState = GameState.Playing;
-            switch (mGame.SelectedAction(selectedTile[1], selectedTile[0]))
+            if (field.Click(selectedTile[1], selectedTile[0])) //Game over
             {
-                case 0: //Game continues
-                    gameState = GameState.Playing;
-                    faceValue = Face.Happy;
-                    if (cantSelectRevealed)
+                gameState = GameState.Lost;
+                for (int row = 0; row < height; row++)
+                {
+                    for (int col = 0; col < width; col++)
                     {
-                        bool foundGoodTile = false;
-                        int[] tempSelectedTile = new int[2];
-                        for (int counter = 1; counter < height | counter < width; counter++)
-                        {
-                            int row = selectedTile[1] - counter;
-                            int col = selectedTile[0] - counter;
-                            for (; col <= selectedTile[0] + counter; col++)
-                            {
-                                if (row >= 0 && row < height && col >= 0 && col < width)
-                                    if (mGame.tile[row, col].Hidden)
-                                    {
-                                        tempSelectedTile[1] = row;
-                                        tempSelectedTile[0] = col;
-                                        if (!mGame.tile[tempSelectedTile[1], tempSelectedTile[0]].Flagged) foundGoodTile = true;
-                                        if (foundGoodTile) break;
-                                    }
-                            }
-                            if (foundGoodTile) break;
-                            col--;
-                            row++;
-                            for (; row <= selectedTile[1] + counter; row++)
-                            {
-                                if (row >= 0 && row < height && col >= 0 && col < width)
-                                    if (mGame.tile[row, col].Hidden)
-                                    {
-                                        tempSelectedTile[1] = row;
-                                        tempSelectedTile[0] = col;
-                                        if (!mGame.tile[tempSelectedTile[1], tempSelectedTile[0]].Flagged) foundGoodTile = true;
-                                        if (foundGoodTile) break;
-                                    }
-                            }
-                            if (foundGoodTile) break;
-                            row--;
-                            col--;
-                            for (; col >= selectedTile[0] - counter; col--)
-                            {
-                                if (row >= 0 && row < height && col >= 0 && col < width)
-                                    if (mGame.tile[row, col].Hidden)
-                                    {
-                                        tempSelectedTile[1] = row;
-                                        tempSelectedTile[0] = col;
-                                        if (!mGame.tile[tempSelectedTile[1], tempSelectedTile[0]].Flagged) foundGoodTile = true;
-                                        if (foundGoodTile) break;
-                                    }
-                            }
-                            if (foundGoodTile) break;
-                            col++;
-                            row--;
-                            for (; row >= selectedTile[1] - counter + 1; row--)
-                            {
-                                if (row >= 0 && row < height && col >= 0 && col < width)
-                                    if (mGame.tile[row, col].Hidden)
-                                    {
-                                        tempSelectedTile[1] = row;
-                                        tempSelectedTile[0] = col;
-                                        if (!mGame.tile[tempSelectedTile[1], tempSelectedTile[0]].Flagged) foundGoodTile = true;
-                                        if (foundGoodTile) break;
-                                    }
-                            }
-                            if (foundGoodTile) break;
-                            row++;
-                        }
-                        selectedTile = tempSelectedTile;
+                        if (field.tiles[row, col].Mined == true) field.tiles[row, col].Reveal();
                     }
-                    break;
-                case 1: //Game won
+                }
+                selectedMine = selectedTile;
+                faceValue = Face.Dead;
+                faceSelected = true;
+            }
+            else
+            {
+                if (field.AllUnminedRevealed) //Game won
+                {
                     gameState = GameState.Won;
                     for (int row = 0; row < height; row++)
                     {
                         for (int col = 0; col < width; col++)
                         {
-                            if (mGame.tile[row, col].MineHere == true) mGame.tile[row, col].Flag();
+                            if (field.tiles[row, col].Mined == true) field.tiles[row, col].Flag();
                         }
                     }
                     flags = 0;
@@ -1011,36 +937,94 @@ namespace Minesweeper
                         bestZune = time;
                         UpdateBestTime(Difficulty.Zune);
                     }
-                    break;
-                case 2: //Game over
-                    gameState = GameState.Lost;
-                    for (int row = 0; row < height; row++)
+                }
+                else //Game continues
+                {
+                    gameState = GameState.Playing;
+                    faceValue = Face.Happy;
+                    if (cantSelectRevealed)
                     {
-                        for (int col = 0; col < width; col++)
+                        bool foundGoodTile = false;
+                        int[] tempSelectedTile = new int[2];
+                        for (int counter = 1; counter < height | counter < width; counter++)
                         {
-                            if (mGame.tile[row, col].MineHere == true) mGame.tile[row, col].Reveal();
+                            int row = selectedTile[1] - counter;
+                            int col = selectedTile[0] - counter;
+                            for (; col <= selectedTile[0] + counter; col++)
+                            {
+                                if (row >= 0 && row < height && col >= 0 && col < width)
+                                    if (field.tiles[row, col].Hidden)
+                                    {
+                                        tempSelectedTile[1] = row;
+                                        tempSelectedTile[0] = col;
+                                        if (!field.tiles[tempSelectedTile[1], tempSelectedTile[0]].Flagged) foundGoodTile = true;
+                                        if (foundGoodTile) break;
+                                    }
+                            }
+                            if (foundGoodTile) break;
+                            col--;
+                            row++;
+                            for (; row <= selectedTile[1] + counter; row++)
+                            {
+                                if (row >= 0 && row < height && col >= 0 && col < width)
+                                    if (field.tiles[row, col].Hidden)
+                                    {
+                                        tempSelectedTile[1] = row;
+                                        tempSelectedTile[0] = col;
+                                        if (!field.tiles[tempSelectedTile[1], tempSelectedTile[0]].Flagged) foundGoodTile = true;
+                                        if (foundGoodTile) break;
+                                    }
+                            }
+                            if (foundGoodTile) break;
+                            row--;
+                            col--;
+                            for (; col >= selectedTile[0] - counter; col--)
+                            {
+                                if (row >= 0 && row < height && col >= 0 && col < width)
+                                    if (field.tiles[row, col].Hidden)
+                                    {
+                                        tempSelectedTile[1] = row;
+                                        tempSelectedTile[0] = col;
+                                        if (!field.tiles[tempSelectedTile[1], tempSelectedTile[0]].Flagged) foundGoodTile = true;
+                                        if (foundGoodTile) break;
+                                    }
+                            }
+                            if (foundGoodTile) break;
+                            col++;
+                            row--;
+                            for (; row >= selectedTile[1] - counter + 1; row--)
+                            {
+                                if (row >= 0 && row < height && col >= 0 && col < width)
+                                    if (field.tiles[row, col].Hidden)
+                                    {
+                                        tempSelectedTile[1] = row;
+                                        tempSelectedTile[0] = col;
+                                        if (!field.tiles[tempSelectedTile[1], tempSelectedTile[0]].Flagged) foundGoodTile = true;
+                                        if (foundGoodTile) break;
+                                    }
+                            }
+                            if (foundGoodTile) break;
+                            row++;
                         }
+                        selectedTile = tempSelectedTile;
                     }
-                    selectedMine = selectedTile;
-                    faceValue = Face.Dead;
-                    faceSelected = true;
-                    break;
-            }
+                }
+            }            
         }
 
         void TileFlag()
         {
             //if (gameState != GameState.Playing) gameState = GameState.Playing;
-            if (mGame.tile[selectedTile[1], selectedTile[0]].Hidden)
+            if (field.tiles[selectedTile[1], selectedTile[0]].Hidden)
             {
-                if (!(mGame.tile[selectedTile[1], selectedTile[0]].Flagged))
+                if (!(field.tiles[selectedTile[1], selectedTile[0]].Flagged))
                 {
-                    mGame.tile[selectedTile[1], selectedTile[0]].Flag();
+                    field.tiles[selectedTile[1], selectedTile[0]].Flag();
                     flags--;
                 }
                 else
                 {
-                    mGame.tile[selectedTile[1], selectedTile[0]].Unflag();
+                    field.tiles[selectedTile[1], selectedTile[0]].Unflag();
                     flags++;
                 }
             }
@@ -1051,23 +1035,23 @@ namespace Minesweeper
             int surroundingFlags = 0;
 
             if (!(selectedTile[1] == 0)) 
-                if (mGame.tile[(selectedTile[1] - 1), selectedTile[0]].Flagged) surroundingFlags++;
+                if (field.tiles[(selectedTile[1] - 1), selectedTile[0]].Flagged) surroundingFlags++;
             if (!(selectedTile[0] == 0)) 
-                if (mGame.tile[selectedTile[1], (selectedTile[0] - 1)].Flagged) surroundingFlags++;
+                if (field.tiles[selectedTile[1], (selectedTile[0] - 1)].Flagged) surroundingFlags++;
             if (!(selectedTile[1] == 0) & !(selectedTile[0] == 0)) 
-                if (mGame.tile[(selectedTile[1] - 1), (selectedTile[0] - 1)].Flagged) surroundingFlags++;
+                if (field.tiles[(selectedTile[1] - 1), (selectedTile[0] - 1)].Flagged) surroundingFlags++;
             if (!(selectedTile[0] == width - 1)) 
-                if (mGame.tile[selectedTile[1], (selectedTile[0] + 1)].Flagged) surroundingFlags++;
+                if (field.tiles[selectedTile[1], (selectedTile[0] + 1)].Flagged) surroundingFlags++;
             if (!(selectedTile[1] == 0) & !(selectedTile[0] == width - 1)) 
-                if (mGame.tile[(selectedTile[1] - 1), (selectedTile[0] + 1)].Flagged) surroundingFlags++;
+                if (field.tiles[(selectedTile[1] - 1), (selectedTile[0] + 1)].Flagged) surroundingFlags++;
             if (!(selectedTile[1] == height - 1)) 
-                if (mGame.tile[(selectedTile[1] + 1), selectedTile[0]].Flagged) surroundingFlags++;
+                if (field.tiles[(selectedTile[1] + 1), selectedTile[0]].Flagged) surroundingFlags++;
             if (!(selectedTile[1] == height - 1) & !(selectedTile[0] == 0)) 
-                if (mGame.tile[(selectedTile[1] + 1), (selectedTile[0] - 1)].Flagged) surroundingFlags++;
+                if (field.tiles[(selectedTile[1] + 1), (selectedTile[0] - 1)].Flagged) surroundingFlags++;
             if (!(selectedTile[1] == height - 1) & !(selectedTile[0] == width - 1))
-                if (mGame.tile[(selectedTile[1] + 1), (selectedTile[0] + 1)].Flagged) surroundingFlags++;
+                if (field.tiles[(selectedTile[1] + 1), (selectedTile[0] + 1)].Flagged) surroundingFlags++;
 
-            if (surroundingFlags == mGame.tile[selectedTile[1], selectedTile[0]].TileNum)
+            if (surroundingFlags == field.tiles[selectedTile[1], selectedTile[0]].Number)
             {
                 int[] originalSelectedTile = new int[2];
                 originalSelectedTile[1] = selectedTile[1];
@@ -1144,7 +1128,7 @@ namespace Minesweeper
             this.height = height;
             this.width = width;
             this.mines = mines;
-            mGame = new MinesweeperGame(height, width, mines);
+            field = new Field(height, width, mines);
             flags = mines;
             gameState = GameState.NotPlaying;
             time = 0;

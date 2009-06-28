@@ -2,76 +2,36 @@
 
 public class Tile
 {
-    protected string fieldValue = " ";
-    protected int tileNum = 0;
-    protected bool mineHere = false;
+    protected int number = 0;
+    protected bool mined = false;
     protected bool hidden = true;
     protected bool flagged = false;
 
-    public string FieldValue
+    public int Number
     {
-        get
-        {
-            if (Flagged) fieldValue = ">";
-            else
-            {
-                if (Hidden) fieldValue = " ";
-                else
-                {
-                    if (MineHere == true) fieldValue = "X";
-                    else fieldValue = TileNum.ToString();
-                }
-            }
-            return fieldValue;
-        }
+        get { return number; }
+        set { number = value; }
     }
 
-    public int TileNum
+    public bool Mined
     {
-        get
-        {
-            return tileNum;
-        }
-        set
-        {
-            tileNum = value;
-        }
-    }
-
-    public bool MineHere
-    {
-        get
-        {
-            return mineHere;
-        }
-        set
-        {
-            mineHere = value;
-        }
+        get { return mined; }
+        set { mined = value; }
     }
 
     public bool Hidden
     {
-        get
-        {
-            return hidden;
-        }
+        get { return hidden; }
     }
 
     public bool Flagged
     {
-        get
-        {
-            return flagged;
-        }
+        get { return flagged; }
     }
 
     public void Reveal()
     {
-        if (!(Flagged))
-        {
-            hidden = false;
-        }
+        if (!(Flagged)) hidden = false;
     }
 
     public void Hide()
@@ -81,11 +41,7 @@ public class Tile
 
     public void Flag()
     {
-        if (Hidden)
-        {
-            flagged = true;
-        }
-
+        if (Hidden) flagged = true;
     }
 
     public void Unflag()
