@@ -325,14 +325,8 @@ namespace Minesweeper
                         if (flagWithPlay) TileFlag();
                         else
                         {
-                            if (field.tiles[selectedTile[1], selectedTile[0]].Hidden)
-                            {
-                                TileClick();
-                            }
-                            else
-                            {
-                                SurroundClick();
-                            }
+                            if (field.tiles[selectedTile[1], selectedTile[0]].Hidden) TileClick();
+                            else SurroundClick();
                         }
                     break;
             }
@@ -351,10 +345,7 @@ namespace Minesweeper
                             {
                                 if (lastUpdate.Subtract(lastMove).TotalMilliseconds > 200) TileClick();
                             }
-                            else
-                            {
-                                SurroundClick();
-                            }
+                            else SurroundClick();
                         }
                         else TileFlag();
                     break;

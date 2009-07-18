@@ -11,13 +11,6 @@ public class Field
         this.width = width;
         this.mines = mines;
         tiles = new Tile[height, width];
-        for (int row = 0; row < height; row++)
-        {
-            for (int col = 0; col < width; col++)
-            {
-                tiles[row, col] = new Tile();
-            }
-        }
         GenerateMines();
         AssignTileNumbers();
     }
