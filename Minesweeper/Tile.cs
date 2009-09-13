@@ -2,14 +2,14 @@
 
 public struct Tile
 {
-    public int Number = 0;
-    public bool Mined = false;
-    protected bool hidden = true;
-    protected bool flagged = false;
+    public int Number;
+    public bool Mined;
+    private bool revealed;
+    private bool flagged;
 
     public bool Hidden
     {
-        get { return hidden; }
+        get { return !revealed; }
     }
 
     public bool Flagged
@@ -19,12 +19,12 @@ public struct Tile
 
     public void Reveal()
     {
-        if (!Flagged) hidden = false;
+        if (!Flagged) revealed = true;
     }
 
     public void Hide()
     {
-        hidden = true;
+        revealed = false;
     }
 
     public void Flag()

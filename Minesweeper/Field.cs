@@ -36,7 +36,7 @@ public class Field
         }
         for (int counter = 0; counter < mines; counter++)
         {
-            tiles[(int)Math.Floor(randomNumbers[counter] / width), randomNumbers[counter] % width].Mined = true;
+            tiles[randomNumbers[counter] / width, randomNumbers[counter] % width].Mined = true;
         }
     }
 
