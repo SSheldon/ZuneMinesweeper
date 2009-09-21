@@ -59,8 +59,6 @@ namespace Minesweeper
             bestTimes.Add(Difficulty.Zune, 999);
             GetBestTimes();
 
-            options = GetOptions();
-
             base.Initialize();
         }
 
@@ -75,6 +73,8 @@ namespace Minesweeper
                 skin.InitializeTextures(directory, Content, normal, header, small);
                 skins.Add(skin);
             }
+
+            options = GetOptions();
             if (options.SelectedSkin > skins.Count - 1) options.SelectedSkin = 0;
         }
 
@@ -82,7 +82,7 @@ namespace Minesweeper
         {
             gameplayScreen = new GameplayScreen(this);
             screenManager.AddScreen(gameplayScreen);
-            //screenManager.AddScreen(new MainMenuScreen(this, false));
+            screenManager.AddScreen(new MainMenuScreen(this, false));
         }
 
         public void GetBestTimes()
