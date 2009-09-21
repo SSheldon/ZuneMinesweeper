@@ -173,7 +173,7 @@ public class Field
             {
                 for (int col = 0; col < width; col++)
                 {
-                    if (tiles[row, col].Mined == false & tiles[row, col].Hidden == true) moreTilesToReveal = true;
+                    if (!tiles[row, col].Mined && tiles[row, col].Hidden) moreTilesToReveal = true;
                 }
             }
             return !moreTilesToReveal;
@@ -229,6 +229,25 @@ public class Field
                 if (!tiles[row, col].Mined) break;
             }
             AssignTileNumbers();
+        }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether all the tiles are hidden.
+    /// </summary>
+    public bool AllHidden
+    {
+        get
+        {
+            bool allHidden = true;
+            for (int row = 0; row < height; row++)
+            {
+                for (int col = 0; col < width; col++)
+                {
+                    if (!tiles[row, col].Hidden) allHidden = false;
+                }
+            }
+            return allHidden;
         }
     }
 }

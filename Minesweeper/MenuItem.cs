@@ -10,39 +10,45 @@ using Microsoft.Xna.Framework.Storage;
 
 namespace Minesweeper
 {
-    class MenuItem
+    public delegate void ItemClick();
+
+    public class MenuItem
     {
         public string text;
         public bool selectable = true;
         public bool colored = true; //true = black, false = gray
         public bool smallFont = false;
+        public bool backed = true;
 
         public MenuItem(string text)
+            : this(text, true, true, false) { }
+
+        public MenuItem(string text, bool selectable) 
+            : this(text, selectable, selectable, false) { }
+
+        public MenuItem(string text, bool selectable, bool colored) 
+            : this(text, selectable, colored, false) { }
+
+        public MenuItem(string text, bool selectable, bool colored, bool smallFont)
         {
             this.text = text;
-        }
-
-        public MenuItem(string text, bool selectable) : this(text, selectable, selectable)
-        {
-            
-        }
-
-        public MenuItem(string text, bool selectable, bool colored) : this(text)
-        {
             this.selectable = selectable;
             this.colored = colored;
-        }
-
-        public MenuItem(string text, bool selectable, bool colored, bool smallFont) : this(text, selectable, colored)
-        {
             this.smallFont = smallFont;
         }
 
+        //public MenuItem(string text, bool selectable = true, bool colored = true, bool smallFont = false)
+        //{
+        //    this.smallFont = smallFont;
+        //}
+        
         public event ItemClick itemClicked;
+        //public event EventHandler<EventArgs> Clicked;
         
         public void OnClick()
         {
             itemClicked();
+            //if (Clicked != null) Clicked(this, EventArs.Empty);
         }
     }
 }

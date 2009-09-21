@@ -549,13 +549,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="blank.png">
-      <Name>blank</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Black\faceselect.png">
       <Name>faceselect</Name>
       <Importer>TextureImporter</Importer>
