@@ -19,7 +19,7 @@ namespace Minesweeper
             newGame.itemClicked += new ItemClick(NewGameClick);
             Add(1, newGame);
             music = new MenuItem("Music");
-            music.itemClicked += new ItemClick(MusicClick);
+            music.itemClicked += new ItemClick(Guide.Show);
             Add(2, music);
             bestTimes = new MenuItem("Best Times");
             bestTimes.itemClicked += new ItemClick(BestTimesClick);
@@ -35,11 +35,6 @@ namespace Minesweeper
         protected override void DrawHeader(SpriteBatch batch)
         {
             batch.Draw(Game.Skin.mTop, new Vector2(0, 0), Color.White);
-        }
-
-        void MusicClick()
-        {
-            Guide.Show();
         }
 
         void NewGameClick()

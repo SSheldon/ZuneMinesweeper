@@ -22,7 +22,7 @@ namespace Minesweeper
     /// </summary>
     public class ScreenManager : DrawableGameComponent
     {
-        public List<GameScreen> screens = new List<GameScreen>();
+        List<GameScreen> screens = new List<GameScreen>();
         List<GameScreen> screensToUpdate = new List<GameScreen>();
 
         InputState input = new InputState();

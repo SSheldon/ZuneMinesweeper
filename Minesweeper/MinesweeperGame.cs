@@ -22,7 +22,6 @@ namespace Minesweeper
         StorageDevice storageDevice;
         StorageContainer container;
         SpriteFont normal, header, small;
-        public GameplayScreen gameplayScreen;
         public List<Skin> skins;
         public Dictionary<Difficulty, int> bestTimes;
         public Skin Skin
@@ -80,8 +79,7 @@ namespace Minesweeper
 
         protected override void BeginRun()
         {
-            gameplayScreen = new GameplayScreen(this);
-            screenManager.AddScreen(gameplayScreen);
+            screenManager.AddScreen(new GameplayScreen(this));
             screenManager.AddScreen(new MainMenuScreen(this, false));
         }
 
@@ -210,6 +208,18 @@ namespace Minesweeper
             dataFile.Write(options.SelectedSkin);
             dataFile.Write(options.UseTouch);
             dataFile.Close();
+        }
+
+        public void ExitAllMenuScreens()
+        {
+            GameScreen[] screens = screenManager.GetScreens();
+            for (int i = screens.Length - 1; i >= 0; i--)
+            {
+                if (screens[i] is MenuScreen)
+                {
+                    screens[i].ExitScreen();
+                }
+            }
         }
 
         public static void DrawNumbers(SpriteBatch batch, Texture2D[] numberTextures, int amount, int x, int y)

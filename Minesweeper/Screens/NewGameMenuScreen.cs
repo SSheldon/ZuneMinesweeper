@@ -32,22 +32,6 @@ namespace Minesweeper
             Add(5, back);
         }
 
-        void NewGame(int height, int width, int mines)
-        {
-            Game.gameplayScreen.SetGame(height, width, mines);
-            Game.gameplayScreen.faceSelected = true;
-            GameScreen[] screens = ScreenManager.GetScreens();
-            for (int i = 0; i < screens.Length; i++)
-            {
-                if (screens[i] is MainMenuScreen)
-                {
-                    screens[i].ExitScreen();
-                    break;
-                }
-            }
-            ExitScreen();
-        }
-
         void BeginnerClick()
         {
             NewGame(9, 9, 10);
@@ -70,7 +54,19 @@ namespace Minesweeper
 
         void CustomClick()
         {
-            ScreenManager.AddScreen(new CustomGameMenuScreen(Game));
+            GameScreen[] screens = ScreenManager.GetScreens();
+            for (int i = 0; i < screens.Length; i++)
+            {
+                if (screens[i] is GameplayScreen)
+                {
+                    ScreenManager.AddScreen(new CustomGameMenuScreen(Game, 
+                        (screens[i] as GameplayScreen).Height,
+                        (screens[i] as GameplayScreen).Width,
+                        (screens[i] as GameplayScreen).Mines));
+                    return;
+                }
+            }
+            ScreenManager.AddScreen(new CustomGameMenuScreen(Game, 9, 9, 10));
         }
     }
 }

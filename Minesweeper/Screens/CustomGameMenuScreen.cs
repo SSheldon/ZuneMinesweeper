@@ -10,9 +10,13 @@ namespace Minesweeper
         MenuItem heightMI, widthMI, minesMI, ok, back;
         int tempHeight, tempWidth, tempMines;
 
-        public CustomGameMenuScreen(MinesweeperGame game)
+        public CustomGameMenuScreen(MinesweeperGame game, int height, int width, int mines)
             : base(game, "Custom Game:")
         {
+            tempHeight = height;
+            tempWidth = width;
+            tempMines = mines;
+            
             heightMI = new MenuItem("Height");
             heightMI.backed = false;
             Add(0, heightMI);
@@ -28,10 +32,6 @@ namespace Minesweeper
             back = new MenuItem("Back");
             back.itemClicked += new ItemClick(Back);
             Add(5, back);
-
-            tempHeight = Game.gameplayScreen.height;
-            tempWidth = Game.gameplayScreen.width;
-            tempMines = Game.gameplayScreen.mines;
         }
 
         public override void Update(GameTime gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen)
@@ -113,27 +113,7 @@ namespace Minesweeper
 
         void OKClick()
         {
-            Game.gameplayScreen.SetGame(tempHeight, tempWidth, tempMines);
-            Game.gameplayScreen.faceSelected = true;
-            GameScreen[] screens = ScreenManager.GetScreens();
-            for (int i = 0; i < screens.Length; i++)
-            {
-                if (screens[i] is MainMenuScreen)
-                {
-                    screens[i].ExitScreen();
-                    break;
-                }
-            }
-            screens = ScreenManager.GetScreens();
-            for (int i = 0; i < screens.Length; i++)
-            {
-                if (screens[i] is NewGameMenuScreen)
-                {
-                    screens[i].ExitScreen();
-                    break;
-                }
-            }
-            ExitScreen();
+            NewGame(tempHeight, tempWidth, tempMines);
         }
     }
 }

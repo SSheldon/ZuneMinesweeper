@@ -71,15 +71,9 @@ namespace Minesweeper
             }
         }
 
-        protected virtual void RightClick()
-        {
+        protected virtual void RightClick() { }
 
-        }
-
-        protected virtual void LeftClick()
-        {
-
-        }
+        protected virtual void LeftClick() { }
 
         protected virtual void Back()
         {
@@ -89,6 +83,21 @@ namespace Minesweeper
         protected void ClickItem()
         {
             items[selectedItem].OnClick();
+        }
+
+        protected void NewGame(int height, int width, int mines)
+        {
+            GameScreen[] screens = ScreenManager.GetScreens();
+            for (int i = 0; i < screens.Length; i++)
+            {
+                if (screens[i] is GameplayScreen)
+                {
+                    (screens[i] as GameplayScreen).SetGame(height, width, mines);
+                    (screens[i] as GameplayScreen).SelectFace();
+                    break;
+                }
+            }
+            Game.ExitAllMenuScreens();
         }
 
         public override void Draw(GameTime gameTime)

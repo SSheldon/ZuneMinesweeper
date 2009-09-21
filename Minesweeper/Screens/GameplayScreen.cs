@@ -12,6 +12,17 @@ using Microsoft.Xna.Framework.Content;
 
 namespace Minesweeper
 {
+    public struct FieldLocation
+    {
+        public int row, col;
+
+        public FieldLocation(int row, int col)
+        {
+            this.row = row;
+            this.col = col;
+        }
+    }
+
     /// <summary>
     /// This component draws the entire background for the game.  It handles
     /// drawing the ground, clouds, sun, and moon.  also handles animating them
@@ -22,23 +33,31 @@ namespace Minesweeper
         #region FIELDS AND INITIALIZATION
         MinesweeperGame Game;
         Field field;
-        public int height, width, mines;
+        int height, width, mines;
         int flags, time;
         double totalTime;
-        int[] selectedTile = new int[2]; //tile in column selectedTile[0] of row selectedTile[1]
-        int[] selectedMine = new int[2];
-        int[] corner = new int[2];
+        FieldLocation selected, selectedMine, corner;
         enum Face { Happy, Win, Dead, Scared };
         Face faceValue;
         enum GameState { NotPlaying, Playing, Won, Lost };
         GameState gameState;
-        public bool faceSelected;
+        bool faceSelected;
         bool Movable
         {
             get { return gameState == GameState.Playing || gameState == GameState.NotPlaying; }
         }
-        //int hZone, vZone;
-        //TimeSpan lastUpdate, lastMove;
+        public int Height
+        {
+            get { return height; }
+        }
+        public int Width
+        {
+            get { return width; }
+        }
+        public int Mines
+        {
+            get { return mines; }
+        }
 
         public GameplayScreen(MinesweeperGame game)
         {
@@ -60,10 +79,8 @@ namespace Minesweeper
             time = 0;
             totalTime = 0.0;
             faceValue = Face.Happy;
-            selectedTile[0] = 0;
-            selectedTile[1] = 0;
-            corner[0] = 0;
-            corner[1] = 0;
+            selected = new FieldLocation(0, 0);
+            corner = new FieldLocation(0, 0);
             faceSelected = false;
         }
         #endregion
@@ -83,28 +100,28 @@ namespace Minesweeper
 
             if (height > 15)
             {
-                if (selectedTile[1] - corner[1] > 10)
+                if (selected.row - corner.row > 10)
                 {
-                    corner[1] = selectedTile[1] - 10;
-                    if (corner[1] + 14 > height - 1) corner[1] = height - 15;
+                    corner.row = selected.row - 10;
+                    if (corner.row + 14 > height - 1) corner.row = height - 15;
                 }
-                else if (corner[1] + 4 > selectedTile[1])
+                else if (corner.row + 4 > selected.row)
                 {
-                    corner[1] = selectedTile[1] - 4;
-                    if (corner[1] < 0) corner[1] = 0;
+                    corner.row = selected.row - 4;
+                    if (corner.row < 0) corner.row = 0;
                 }
             }
             if (width > 14)
             {
-                if (selectedTile[0] - corner[0] > 9)
+                if (selected.col - corner.col > 9)
                 {
-                    corner[0] = selectedTile[0] - 9;
-                    if (corner[0] + 13 > width - 1) corner[0] = width - 14;
+                    corner.col = selected.col - 9;
+                    if (corner.col + 13 > width - 1) corner.col = width - 14;
                 }
-                else if (corner[0] + 4 > selectedTile[0])
+                else if (corner.col + 4 > selected.col)
                 {
-                    corner[0] = selectedTile[0] - 4;
-                    if (corner[0] < 0) corner[0] = 0;
+                    corner.col = selected.col - 4;
+                    if (corner.col < 0) corner.col = 0;
                 }
             }
 
@@ -126,7 +143,7 @@ namespace Minesweeper
             if (!Movable && input.MenuSelect)
             {
                 SetGame(height, width, mines);
-                faceSelected = true;
+                SelectFace();
             }
             if (Movable)
             {
@@ -144,7 +161,7 @@ namespace Minesweeper
                     if (faceSelected) SetGame(height, width, mines);
                     else if (Game.options.FlagWithPlay)
                     {
-                        if (field.tiles[selectedTile[1], selectedTile[0]].Hidden) TileClick();
+                        if (field.tiles[selected.row, selected.col].Hidden) TileClick();
                         else SurroundClick();
                     }
                     else TileFlag();
@@ -155,7 +172,7 @@ namespace Minesweeper
                     if (Game.options.FlagWithPlay) TileFlag();
                     else
                     {
-                        if (field.tiles[selectedTile[1], selectedTile[0]].Hidden) TileClick();
+                        if (field.tiles[selected.row, selected.col].Hidden) TileClick();
                         else SurroundClick();
                     }
                 }
@@ -168,40 +185,45 @@ namespace Minesweeper
                 {
                     if (faceSelected)
                     {
-                        selectedTile[1] = height - 1;
+                        selected.row = height - 1;
                         faceSelected = false;
                     }
-                    else if (selectedTile[1] == 0) faceSelected = true;
-                    else selectedTile[1]--;
+                    else if (selected.row == 0) faceSelected = true;
+                    else selected.row--;
                 }
                 if (input.MenuDown)
                 {
                     if (faceSelected)
                     {
-                        selectedTile[1] = 0;
+                        selected.row = 0;
                         faceSelected = false;
                     }
-                    else if (selectedTile[1] < height - 1) selectedTile[1]++;
+                    else if (selected.row < height - 1) selected.row++;
                     else faceSelected = true;
                 }
                 if (input.IsNewButtonPress(Buttons.DPadLeft) && !faceSelected)
                 {
-                    if (selectedTile[0] == 0) selectedTile[0] = width - 1;
-                    else selectedTile[0]--;
+                    if (selected.col == 0) selected.col = width - 1;
+                    else selected.col--;
                 }
                 if (input.IsNewButtonPress(Buttons.DPadRight) && !faceSelected)
                 {
-                    if (selectedTile[0] < width - 1) selectedTile[0]++;
-                    else selectedTile[0] = 0;
+                    if (selected.col < width - 1) selected.col++;
+                    else selected.col = 0;
                 }
             }
         }
 
+        public void SelectFace()
+        {
+            faceSelected = true;
+        }
+
         void TileClick()
         {
-            if (field.AllHidden) field.MoveMine(selectedTile[1], selectedTile[0]);
+            if (field.AllHidden) field.MoveMine(selected.row, selected.col);
             if (gameState != GameState.Playing) gameState = GameState.Playing;
-            if (field.Click(selectedTile[1], selectedTile[0])) //Game over
+            if (field.Click(selected.row, selected.col)) //Game over
             {
                 gameState = GameState.Lost;
                 for (int row = 0; row < height; row++)
@@ -211,7 +233,7 @@ namespace Minesweeper
                         if (field.tiles[row, col].Mined == true) field.tiles[row, col].Reveal();
                     }
                 }
-                selectedMine = selectedTile;
+                selectedMine = selected;
                 faceValue = Face.Dead;
                 faceSelected = true;
             }
@@ -261,16 +283,16 @@ namespace Minesweeper
 
         void TileFlag()
         {
-            if (field.tiles[selectedTile[1], selectedTile[0]].Hidden)
+            if (field.tiles[selected.row, selected.col].Hidden)
             {
-                if (!(field.tiles[selectedTile[1], selectedTile[0]].Flagged))
+                if (!(field.tiles[selected.row, selected.col].Flagged))
                 {
-                    field.tiles[selectedTile[1], selectedTile[0]].Flag();
+                    field.tiles[selected.row, selected.col].Flag();
                     flags--;
                 }
                 else
                 {
-                    field.tiles[selectedTile[1], selectedTile[0]].Unflag();
+                    field.tiles[selected.row, selected.col].Unflag();
                     flags++;
                 }
             }
@@ -282,22 +304,22 @@ namespace Minesweeper
             {
                 int surroundingFlags = 0;
 
-                if (!(selectedTile[1] == 0))
-                    if (field.tiles[(selectedTile[1] - 1), selectedTile[0]].Flagged) surroundingFlags++;
-                if (!(selectedTile[0] == 0))
-                    if (field.tiles[selectedTile[1], (selectedTile[0] - 1)].Flagged) surroundingFlags++;
-                if (!(selectedTile[1] == 0) & !(selectedTile[0] == 0))
-                    if (field.tiles[(selectedTile[1] - 1), (selectedTile[0] - 1)].Flagged) surroundingFlags++;
-                if (!(selectedTile[0] == width - 1))
-                    if (field.tiles[selectedTile[1], (selectedTile[0] + 1)].Flagged) surroundingFlags++;
-                if (!(selectedTile[1] == 0) & !(selectedTile[0] == width - 1))
-                    if (field.tiles[(selectedTile[1] - 1), (selectedTile[0] + 1)].Flagged) surroundingFlags++;
-                if (!(selectedTile[1] == height - 1))
-                    if (field.tiles[(selectedTile[1] + 1), selectedTile[0]].Flagged) surroundingFlags++;
-                if (!(selectedTile[1] == height - 1) & !(selectedTile[0] == 0))
-                    if (field.tiles[(selectedTile[1] + 1), (selectedTile[0] - 1)].Flagged) surroundingFlags++;
-                if (!(selectedTile[1] == height - 1) & !(selectedTile[0] == width - 1))
-                    if (field.tiles[(selectedTile[1] + 1), (selectedTile[0] + 1)].Flagged) surroundingFlags++;
+                if (!(selected.row == 0))
+                    if (field.tiles[(selected.row - 1), selected.col].Flagged) surroundingFlags++;
+                if (!(selected.col == 0))
+                    if (field.tiles[selected.row, (selected.col - 1)].Flagged) surroundingFlags++;
+                if (!(selected.row == 0) & !(selected.col == 0))
+                    if (field.tiles[(selected.row - 1), (selected.col - 1)].Flagged) surroundingFlags++;
+                if (!(selected.col == width - 1))
+                    if (field.tiles[selected.row, (selected.col + 1)].Flagged) surroundingFlags++;
+                if (!(selected.row == 0) & !(selected.col == width - 1))
+                    if (field.tiles[(selected.row - 1), (selected.col + 1)].Flagged) surroundingFlags++;
+                if (!(selected.row == height - 1))
+                    if (field.tiles[(selected.row + 1), selected.col].Flagged) surroundingFlags++;
+                if (!(selected.row == height - 1) & !(selected.col == 0))
+                    if (field.tiles[(selected.row + 1), (selected.col - 1)].Flagged) surroundingFlags++;
+                if (!(selected.row == height - 1) & !(selected.col == width - 1))
+                    if (field.tiles[(selected.row + 1), (selected.col + 1)].Flagged) surroundingFlags++;
 
                 return surroundingFlags;
             }
@@ -305,71 +327,60 @@ namespace Minesweeper
 
         void SurroundClick()
         {
-            if (FlagsSurroundingSelected == field.tiles[selectedTile[1], selectedTile[0]].Number)
+            if (FlagsSurroundingSelected == field.tiles[selected.row, selected.col].Number)
             {
-                int[] originalSelectedTile = new int[2];
-                originalSelectedTile[1] = selectedTile[1];
-                originalSelectedTile[0] = selectedTile[0];
+                FieldLocation originalSelected = selected;
 
-                if (!(originalSelectedTile[1] == 0))
+                if (!(originalSelected.row == 0))
                 {
-                    selectedTile[1] = originalSelectedTile[1] - 1;
-                    selectedTile[0] = originalSelectedTile[0];
+                    selected = new FieldLocation(originalSelected.row - 1, originalSelected.col);
                     TileClick();
                 }
                 if (gameState != GameState.Playing) return;
-                if (!(originalSelectedTile[0] == 0))
+                if (!(originalSelected.col == 0))
                 {
-                    selectedTile[1] = originalSelectedTile[1];
-                    selectedTile[0] = originalSelectedTile[0] - 1;
+                    selected = new FieldLocation(originalSelected.row, originalSelected.col - 1);
                     TileClick();
                 }
                 if (gameState != GameState.Playing) return;
-                if (!(originalSelectedTile[1] == 0) & !(originalSelectedTile[0] == 0))
+                if (!(originalSelected.row == 0) & !(originalSelected.col == 0))
                 {
-                    selectedTile[1] = originalSelectedTile[1] - 1;
-                    selectedTile[0] = originalSelectedTile[0] - 1;
+                    selected = new FieldLocation(originalSelected.row - 1, originalSelected.col - 1);
                     TileClick();
                 }
                 if (gameState != GameState.Playing) return;
-                if (!(originalSelectedTile[0] == width - 1))
+                if (!(originalSelected.col == width - 1))
                 {
-                    selectedTile[1] = originalSelectedTile[1];
-                    selectedTile[0] = originalSelectedTile[0] + 1;
+                    selected = new FieldLocation(originalSelected.row, originalSelected.col + 1);
                     TileClick();
                 }
                 if (gameState != GameState.Playing) return;
-                if (!(originalSelectedTile[1] == 0) & !(originalSelectedTile[0] == width - 1))
+                if (!(originalSelected.row == 0) & !(originalSelected.col == width - 1))
                 {
-                    selectedTile[1] = originalSelectedTile[1] - 1;
-                    selectedTile[0] = originalSelectedTile[0] + 1;
+                    selected = new FieldLocation(originalSelected.row - 1, originalSelected.col + 1);
                     TileClick();
                 }
                 if (gameState != GameState.Playing) return;
-                if (!(originalSelectedTile[1] == height - 1))
+                if (!(originalSelected.row == height - 1))
                 {
-                    selectedTile[1] = originalSelectedTile[1] + 1;
-                    selectedTile[0] = originalSelectedTile[0];
+                    selected = new FieldLocation(originalSelected.row + 1, originalSelected.col);
                     TileClick();
                 }
                 if (gameState != GameState.Playing) return;
-                if (!(originalSelectedTile[1] == height - 1) & !(originalSelectedTile[0] == 0))
+                if (!(originalSelected.row == height - 1) & !(originalSelected.col == 0))
                 {
-                    selectedTile[1] = originalSelectedTile[1] + 1;
-                    selectedTile[0] = originalSelectedTile[0] - 1;
+                    selected = new FieldLocation(originalSelected.row + 1, originalSelected.col - 1);
                     TileClick();
                 }
                 if (gameState != GameState.Playing) return;
-                if (!(originalSelectedTile[1] == height - 1) & !(originalSelectedTile[0] == width - 1))
+                if (!(originalSelected.row == height - 1) & !(originalSelected.col == width - 1))
                 {
-                    selectedTile[1] = originalSelectedTile[1] + 1;
-                    selectedTile[0] = originalSelectedTile[0] + 1;
+                    selected = new FieldLocation(originalSelected.row + 1, originalSelected.col + 1);
                     TileClick();
                 }
                 if (gameState != GameState.Playing) return;
 
-                selectedTile[1] = originalSelectedTile[1];
-                selectedTile[0] = originalSelectedTile[0];
+                selected = originalSelected;
             }
             else
             {
@@ -440,19 +451,19 @@ namespace Minesweeper
 
         void DrawFieldBorder(SpriteBatch batch)
         {
-            batch.Draw(Game.Skin.borderTL, new Rectangle(0 - corner[0] * 16, 56 - corner[1] * 16, 8, 8), Color.White);
-            batch.Draw(Game.Skin.borderT, new Rectangle(8 - corner[0] * 16, 56 - corner[1] * 16, 16 * width, 8), Color.White);
-            batch.Draw(Game.Skin.borderTR, new Rectangle(8 + 16 * width - corner[0] * 16, 56 - corner[1] * 16, 8, 8), Color.White);
-            batch.Draw(Game.Skin.borderL, new Rectangle(0 - corner[0] * 16, 64 - corner[1] * 16, 8, 16 * height), Color.White);
-            batch.Draw(Game.Skin.borderR, new Rectangle(8 + 16 * width - corner[0] * 16, 64 - corner[1] * 16, 8, 16 * height), Color.White);
-            batch.Draw(Game.Skin.borderBL, new Rectangle(0 - corner[0] * 16, 64 + 16 * height - corner[1] * 16, 8, 8), Color.White);
-            batch.Draw(Game.Skin.borderB, new Rectangle(8 - corner[0] * 16, 64 + 16 * height - corner[1] * 16, 16 * width, 8), Color.White);
-            batch.Draw(Game.Skin.borderBR, new Rectangle(8 + 16 * width - corner[0] * 16, 64 + 16 * height - corner[1] * 16, 8, 8), Color.White);
+            batch.Draw(Game.Skin.borderTL, new Rectangle(0 - corner.col * 16, 56 - corner.row * 16, 8, 8), Color.White);
+            batch.Draw(Game.Skin.borderT, new Rectangle(8 - corner.col * 16, 56 - corner.row * 16, 16 * width, 8), Color.White);
+            batch.Draw(Game.Skin.borderTR, new Rectangle(8 + 16 * width - corner.col * 16, 56 - corner.row * 16, 8, 8), Color.White);
+            batch.Draw(Game.Skin.borderL, new Rectangle(0 - corner.col * 16, 64 - corner.row * 16, 8, 16 * height), Color.White);
+            batch.Draw(Game.Skin.borderR, new Rectangle(8 + 16 * width - corner.col * 16, 64 - corner.row * 16, 8, 16 * height), Color.White);
+            batch.Draw(Game.Skin.borderBL, new Rectangle(0 - corner.col * 16, 64 + 16 * height - corner.row * 16, 8, 8), Color.White);
+            batch.Draw(Game.Skin.borderB, new Rectangle(8 - corner.col * 16, 64 + 16 * height - corner.row * 16, 16 * width, 8), Color.White);
+            batch.Draw(Game.Skin.borderBR, new Rectangle(8 + 16 * width - corner.col * 16, 64 + 16 * height - corner.row * 16, 8, 8), Color.White);
         }
 
         void DrawTileSelect(SpriteBatch batch)
         {
-            if (!faceSelected) batch.Draw(Game.Skin.select, new Rectangle(8 + selectedTile[0] * 16 - corner[0] * 16, 64 + selectedTile[1] * 16 - corner[1] * 16, 16, 16), Color.White);
+            if (!faceSelected) batch.Draw(Game.Skin.select, new Rectangle(8 + selected.col * 16 - corner.col * 16, 64 + selected.row * 16 - corner.row * 16, 16, 16), Color.White);
         }
 
         void DrawField(SpriteBatch batch)
@@ -473,11 +484,11 @@ namespace Minesweeper
                         if (field.tiles[row, col].Flagged & !field.tiles[row, col].Mined) tile = Game.Skin.tNotMine;
                         else if (field.tiles[row, col].Flagged) tile = Game.Skin.tFlag;
                         else if (field.tiles[row, col].Hidden) tile = Game.Skin.tHidden;
-                        else if (row == selectedMine[1] && col == selectedMine[0] && gameState == GameState.Lost) tile = Game.Skin.tClickedMine;
+                        else if (row == selectedMine.row && col == selectedMine.col && gameState == GameState.Lost) tile = Game.Skin.tClickedMine;
                         else if (field.tiles[row, col].Mined) tile = Game.Skin.tMine;
                         else tile = Game.Skin.t[field.tiles[row, col].Number];
                     }
-                    batch.Draw(tile, new Rectangle(8 + col * 16 - corner[0] * 16, 64 + row * 16 - corner[1] * 16, 16, 16), Color.White);
+                    batch.Draw(tile, new Rectangle(8 + col * 16 - corner.col * 16, 64 + row * 16 - corner.row * 16, 16, 16), Color.White);
                 }
             }
         }
