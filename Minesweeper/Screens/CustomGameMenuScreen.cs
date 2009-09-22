@@ -27,10 +27,10 @@ namespace Minesweeper
             minesMI.backed = false;
             Add(2, minesMI);
             ok = new MenuItem("OK");
-            ok.itemClicked += new ItemClick(OKClick);
+            ok.Clicked += new ItemClick(OKClick);
             Add(4, ok);
             back = new MenuItem("Back");
-            back.itemClicked += new ItemClick(Back);
+            back.Clicked += new ItemClick(Back);
             Add(5, back);
         }
 

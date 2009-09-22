@@ -2,27 +2,38 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Minesweeper
 {
     public class SkinMenuScreen : MenuScreen
     {
         MenuItem skinMI, change, back;
+        string[] skinNames;
         int tempSelectedSkin;
         Texture2D blank;
 
         public SkinMenuScreen(MinesweeperGame game)
             : base(game, "Skin:")
         {
-            tempSelectedSkin = Game.options.SelectedSkin;
+            skinNames = Game.skins.Keys.ToArray();
+            for (int i = 0; i < skinNames.Length; i++)
+            {
+                if (skinNames[i] == Game.options.SelectedSkin)
+                {
+                    tempSelectedSkin = i;
+                    break;
+                }
+            }
             
-            skinMI = new MenuItem("Classic");
+            skinMI = new MenuItem(skinNames[tempSelectedSkin]);
             Add(0, skinMI);
             change = new MenuItem("Change");
-            change.itemClicked += new ItemClick(ChangeClick);
+            change.Clicked += new ItemClick(ChangeClick);
             Add(4, change);
             back = new MenuItem("Back");
-            back.itemClicked += new ItemClick(Back);
+            back.Clicked += new ItemClick(Back);
             Add(5, back);
         }
 
@@ -34,7 +45,7 @@ namespace Minesweeper
 
         public override void Update(GameTime gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen)
         {
-            skinMI.text = Game.skins[tempSelectedSkin].name;
+            skinMI.text = skinNames[tempSelectedSkin];
 
             base.Update(gameTime, otherScreenHasFocus, coveredByOtherScreen);
         }
@@ -43,14 +54,14 @@ namespace Minesweeper
         {
             batch.Draw(Game.Skin.leftArrow, new Vector2(1, 85), Color.White);
             batch.Draw(Game.Skin.rightArrow, new Vector2(14 + 212 + 2, 85), Color.White);
-            batch.DrawString(Game.Skin.normal, "By " + Game.skins[tempSelectedSkin].creator, new Vector2(14, 118), Game.Skin.coloredText);
+            batch.DrawString(Game.Skin.normal, "By " + Game.skins[skinNames[tempSelectedSkin]].creator, new Vector2(14, 118), Game.Skin.coloredText);
             DrawSkinSample(batch);
             batch.Draw(Game.Skin.mSelect, new Vector2(14, 78 + selectedItem * 40), Color.White);
         }
 
         private void DrawSkinSample(SpriteBatch spriteBatch)
         {
-            Skin s = Game.skins[tempSelectedSkin];
+            Skin s = Game.skins[skinNames[tempSelectedSkin]];
             spriteBatch.Draw(blank, new Rectangle(22, 166, 196, 64), s.background);
             spriteBatch.Draw(s.numBox, new Vector2(30, 191), Color.White);
             spriteBatch.Draw(s.numbers[10], new Vector2(38, 199), Color.White);
@@ -80,7 +91,6 @@ namespace Minesweeper
                 if (tempSelectedSkin == Game.skins.Count - 1) tempSelectedSkin = 0;
                 else tempSelectedSkin++;
             }
-            int a = ScreenManager.GetScreens().Length;
         }
 
         protected override void LeftClick()
@@ -96,7 +106,7 @@ namespace Minesweeper
 
         void ChangeClick()
         {
-            Game.options.SelectedSkin = tempSelectedSkin;
+            Game.options.SelectedSkin = skinNames[tempSelectedSkin];
         }
     }
 }

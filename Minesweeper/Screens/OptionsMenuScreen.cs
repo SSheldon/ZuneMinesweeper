@@ -16,19 +16,19 @@ namespace Minesweeper
             oldOptions = new Options(Game.options.CantSelectRevealed, Game.options.FlagWithPlay, Game.options.UseTouch, Game.options.SelectedSkin);
 
             cantSelectRevealedMI = new MenuItem("Revealed tiles can't be selected", false, false, true);
-            cantSelectRevealedMI.itemClicked += new ItemClick(CantSelectRevealedClick);
+            cantSelectRevealedMI.Clicked += new ItemClick(CantSelectRevealedClick);
             Add(0, cantSelectRevealedMI);
             flagButton = new MenuItem("Flag tiles with Play button", true, true, true);
-            flagButton.itemClicked += new ItemClick(FlagButtonClick);
+            flagButton.Clicked += new ItemClick(FlagButtonClick);
             Add(1, flagButton);
             useTouchMI = new MenuItem("Touch control off", false, false, true);
-            useTouchMI.itemClicked += new ItemClick(UseTouchClick);
+            useTouchMI.Clicked += new ItemClick(UseTouchClick);
             Add(2, useTouchMI);
             changeSkin = new MenuItem("Change Skin");
-            changeSkin.itemClicked += new ItemClick(ChangeSkinClick);
+            changeSkin.Clicked += new ItemClick(ChangeSkinClick);
             Add(3, changeSkin);
             back = new MenuItem("Back");
-            back.itemClicked += new ItemClick(Back);
+            back.Clicked += new ItemClick(Back);
             Add(5, back);
         }
 

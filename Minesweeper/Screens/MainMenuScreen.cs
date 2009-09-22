@@ -13,22 +13,22 @@ namespace Minesweeper
             : base(game)
         {
             resume = new MenuItem("Resume", resumable);
-            resume.itemClicked += new ItemClick(Back);
+            resume.Clicked += new ItemClick(Back);
             Add(0, resume);
             newGame = new MenuItem("New Game");
-            newGame.itemClicked += new ItemClick(NewGameClick);
+            newGame.Clicked += new ItemClick(NewGameClick);
             Add(1, newGame);
             music = new MenuItem("Music");
-            music.itemClicked += new ItemClick(Guide.Show);
+            music.Clicked += new ItemClick(Guide.Show);
             Add(2, music);
             bestTimes = new MenuItem("Best Times");
-            bestTimes.itemClicked += new ItemClick(BestTimesClick);
+            bestTimes.Clicked += new ItemClick(BestTimesClick);
             Add(3, bestTimes);
             options = new MenuItem("Options");
-            options.itemClicked += new ItemClick(OptionsClick);
+            options.Clicked += new ItemClick(OptionsClick);
             Add(4, options);
             exit = new MenuItem("Exit");
-            exit.itemClicked += new ItemClick(Game.Exit);
+            exit.Clicked += new ItemClick(Game.Exit);
             Add(5, exit);
         }
 

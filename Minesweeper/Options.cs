@@ -5,7 +5,7 @@ namespace Minesweeper
     public class Options
     {
         bool cantSelectRevealed, flagWithPlay, useTouch;
-        int selectedSkin;
+        string selectedSkin;
 
         public bool CantSelectRevealed
         {
@@ -25,13 +25,13 @@ namespace Minesweeper
             set { useTouch = value; }
         }
 
-        public int SelectedSkin
+        public string SelectedSkin
         {
             get { return selectedSkin; }
             set { selectedSkin = value; }
         }
 
-        public Options(bool cantSelectRevealed, bool flagWithPlay, bool useTouch, int selectedSkin)
+        public Options(bool cantSelectRevealed, bool flagWithPlay, bool useTouch, string selectedSkin)
         {
             CantSelectRevealed = cantSelectRevealed;
             FlagWithPlay = flagWithPlay;

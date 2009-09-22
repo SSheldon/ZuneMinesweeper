@@ -25,10 +25,10 @@ namespace Minesweeper
             bestZuneMI.backed = false;
             Add(3, bestZuneMI);
             resetMI = new MenuItem("Reset Times");
-            resetMI.itemClicked += new ItemClick(ResetClick);
+            resetMI.Clicked += new ItemClick(ResetClick);
             Add(4, resetMI);
             back = new MenuItem("Back");
-            back.itemClicked += new ItemClick(Back);
+            back.Clicked += new ItemClick(Back);
             Add(5, back);
         }
 

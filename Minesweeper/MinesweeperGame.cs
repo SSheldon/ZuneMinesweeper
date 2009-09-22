@@ -22,7 +22,7 @@ namespace Minesweeper
         StorageDevice storageDevice;
         StorageContainer container;
         SpriteFont normal, header, small;
-        public List<Skin> skins;
+        public Dictionary<string, Skin> skins;
         public Dictionary<Difficulty, int> bestTimes;
         public Skin Skin
         {
@@ -50,13 +50,15 @@ namespace Minesweeper
             //if (!storageDevice.IsConnected) Exit();
             container = storageDevice.OpenContainer("Minesweeper");
 
-            skins = new List<Skin>();
+            skins = new Dictionary<string, Skin>();
             bestTimes = new Dictionary<Difficulty, int>(4);
             bestTimes.Add(Difficulty.Beginner, 999);
             bestTimes.Add(Difficulty.Intermediate, 999);
             bestTimes.Add(Difficulty.Expert, 999);
             bestTimes.Add(Difficulty.Zune, 999);
             GetBestTimes();
+
+            options = new Options(false, true, false, "Blue");
 
             base.Initialize();
         }
@@ -70,11 +72,11 @@ namespace Minesweeper
             {
                 Skin skin = Content.Load<Skin>(directory + "/skinfo");
                 skin.InitializeTextures(directory, Content, normal, header, small);
-                skins.Add(skin);
+                skins.Add(skin.name, skin);
             }
 
-            options = GetOptions();
-            if (options.SelectedSkin > skins.Count - 1) options.SelectedSkin = 0;
+            GetOptions();
+            if (!skins.ContainsKey(options.SelectedSkin)) options.SelectedSkin = "Blue";
         }
 
         protected override void BeginRun()
@@ -158,56 +160,39 @@ namespace Minesweeper
             }
         }
 
-        public Options GetOptions()
+        public void GetOptions()
         {
             if (File.Exists(Path.Combine(container.Path, "options.dat")))
+                File.Delete(Path.Combine(container.Path, "options.dat"));
+            if (File.Exists(Path.Combine(container.Path, "options.txt")))
             {
-                bool cantSelectRevealed = false, flagWithPlay = true, useTouch = false;
-                int selectedSkin = 0;
-                BinaryReader dataFile;
-                dataFile = new BinaryReader(new FileStream(Path.Combine(container.Path, "options.dat"), FileMode.Open));
+                StreamReader reader = new StreamReader(new FileStream(Path.Combine(container.Path, "options.txt"), FileMode.Open));
                 try
                 {
-                    cantSelectRevealed = dataFile.ReadBoolean();
-                    flagWithPlay = dataFile.ReadBoolean();
-                    selectedSkin = dataFile.ReadInt32();
-                    useTouch = dataFile.ReadBoolean();
-                    dataFile.Close();
-                    return new Options(cantSelectRevealed, flagWithPlay, useTouch, selectedSkin);
+                    options.CantSelectRevealed = bool.Parse(reader.ReadLine());
+                    options.FlagWithPlay = bool.Parse(reader.ReadLine());
+                    options.SelectedSkin = reader.ReadLine();
+                    options.UseTouch = bool.Parse(reader.ReadLine());
+                    reader.Close();
                 }
-                catch (EndOfStreamException e)
+                catch
                 {
-                    dataFile.Close();
+                    reader.Close();
                     UpdateOptions();
-                    return GetOptions();
                 }
             }
-            else
-            {
-                int selectedSkin = 0;
-                for (int counter = 0; counter < skins.Count - 1; counter++)
-                {
-                    if (skins[counter].name == "Blue")
-                    {
-                        selectedSkin = counter;
-                        break;
-                    }
-                }
-                options = new Options(false, true, false, selectedSkin);
-                UpdateOptions();
-                return GetOptions();
-            }
+            else UpdateOptions();
         }
 
         public void UpdateOptions()
         {
-            BinaryWriter dataFile;
-            dataFile = new BinaryWriter(new FileStream(Path.Combine(container.Path, "options.dat"), FileMode.Create));
-            dataFile.Write(options.CantSelectRevealed);
-            dataFile.Write(options.FlagWithPlay);
-            dataFile.Write(options.SelectedSkin);
-            dataFile.Write(options.UseTouch);
-            dataFile.Close();
+            StreamWriter writer = new StreamWriter(new FileStream(Path.Combine(container.Path, "options.txt"), FileMode.Create));
+            writer.WriteLine(options.CantSelectRevealed);
+            writer.WriteLine(options.FlagWithPlay);
+            writer.WriteLine(options.SelectedSkin);
+            writer.WriteLine(options.UseTouch);
+            writer.Flush();
+            writer.Close();
         }
 
         public void ExitAllMenuScreens()

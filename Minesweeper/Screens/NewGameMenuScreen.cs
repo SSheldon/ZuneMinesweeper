@@ -13,22 +13,22 @@ namespace Minesweeper
             : base(game, "New Game:")
         {
             beginner = new MenuItem("Beginner");
-            beginner.itemClicked += new ItemClick(BeginnerClick);
+            beginner.Clicked += new ItemClick(BeginnerClick);
             Add(0, beginner);
             intermediate = new MenuItem("Intermediate");
-            intermediate.itemClicked += new ItemClick(IntermediateClick);
+            intermediate.Clicked += new ItemClick(IntermediateClick);
             Add(1, intermediate);
             expert = new MenuItem("Expert");
-            expert.itemClicked += new ItemClick(ExpertClick);
+            expert.Clicked += new ItemClick(ExpertClick);
             Add(2, expert);
             zune = new MenuItem("Zune Fit");
-            zune.itemClicked += new ItemClick(ZuneClick);
+            zune.Clicked += new ItemClick(ZuneClick);
             Add(3, zune);
             custom = new MenuItem("Custom");
-            custom.itemClicked += new ItemClick(CustomClick);
+            custom.Clicked += new ItemClick(CustomClick);
             Add(4, custom);
             back = new MenuItem("Back");
-            back.itemClicked += new ItemClick(Back);
+            back.Clicked += new ItemClick(Back);
             Add(5, back);
         }
 

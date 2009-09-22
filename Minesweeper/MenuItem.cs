@@ -39,16 +39,17 @@ namespace Minesweeper
 
         //public MenuItem(string text, bool selectable = true, bool colored = true, bool smallFont = false)
         //{
+        //    this.text = text;
+        //    this.selectable = selectable;
+        //    this.colored = colored;
         //    this.smallFont = smallFont;
         //}
         
-        public event ItemClick itemClicked;
-        //public event EventHandler<EventArgs> Clicked;
+        public event ItemClick Clicked;
         
         public void OnClick()
         {
-            itemClicked();
-            //if (Clicked != null) Clicked(this, EventArs.Empty);
+            if (Clicked != null) Clicked();
         }
     }
 }
