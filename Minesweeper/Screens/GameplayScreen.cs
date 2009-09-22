@@ -135,7 +135,7 @@ namespace Minesweeper
         /// <param name="input">The state of the gamepads</param>
         public override void HandleInput(InputState input)
         {
-            if (input.MenuCancel)
+            if (input.IsNewButtonPress(Buttons.Back))
             {
                 if (gameState == GameState.Playing) gameState = GameState.NotPlaying;
                 ScreenManager.AddScreen(new MainMenuScreen(Game, true));
@@ -143,15 +143,14 @@ namespace Minesweeper
             if (Movable)
             {
                 if (!faceSelected)
-                    if ((Game.options.FlagWithPlay && input.CurrentGamePadStates[0].Buttons.A == ButtonState.Pressed) ||
-                        (!Game.options.FlagWithPlay && input.CurrentGamePadStates[0].Buttons.B == ButtonState.Pressed)) 
+                    if ((Game.options.FlagWithPlay && input.IsButtonPressed(Buttons.A)) ||
+                        (!Game.options.FlagWithPlay && input.IsButtonPressed(Buttons.B))) 
                         faceValue = Face.Scared;
                 if (faceValue == Face.Scared)
-                    if ((Game.options.FlagWithPlay && input.CurrentGamePadStates[0].Buttons.A != ButtonState.Pressed) ||
-                        (!Game.options.FlagWithPlay && input.CurrentGamePadStates[0].Buttons.B != ButtonState.Pressed))
+                    if ((Game.options.FlagWithPlay && !input.IsButtonPressed(Buttons.A)) ||
+                        (!Game.options.FlagWithPlay && !input.IsButtonPressed(Buttons.B)))
                         faceValue = Face.Happy;
-                if (input.LastGamePadStates[0].Buttons.A == ButtonState.Pressed &&
-                    input.CurrentGamePadStates[0].Buttons.A == ButtonState.Released)
+                if (input.IsNewButtonRelease(Buttons.A))
                 {
                     if (faceSelected) SetGame(height, width, mines);
                     else if (Game.options.FlagWithPlay)
@@ -161,8 +160,7 @@ namespace Minesweeper
                     }
                     else TileFlag();
                 }
-                if (input.LastGamePadStates[0].Buttons.B == ButtonState.Pressed &&
-                    input.CurrentGamePadStates[0].Buttons.B == ButtonState.Released && !faceSelected)
+                if (input.IsNewButtonRelease(Buttons.B) && !faceSelected)
                 {
                     if (Game.options.FlagWithPlay) TileFlag();
                     else
@@ -173,12 +171,11 @@ namespace Minesweeper
                 }
 
             }
-            else if (input.LastGamePadStates[0].Buttons.A == ButtonState.Pressed &&
-                input.CurrentGamePadStates[0].Buttons.A == ButtonState.Released) SetGame(height, width, mines);
+            else if (input.IsNewButtonRelease(Buttons.A)) SetGame(height, width, mines);
             //DPAD Controls
             if (Movable)
             {
-                if (input.MenuUp)
+                if (input.IsNewButtonPress(Buttons.DPadUp))
                 {
                     if (faceSelected)
                     {
@@ -188,7 +185,7 @@ namespace Minesweeper
                     else if (selected.row == 0) faceSelected = true;
                     else selected.row--;
                 }
-                if (input.MenuDown)
+                if (input.IsNewButtonPress(Buttons.DPadDown))
                 {
                     if (faceSelected)
                     {

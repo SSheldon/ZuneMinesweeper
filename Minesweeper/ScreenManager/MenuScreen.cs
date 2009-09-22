@@ -40,15 +40,14 @@ namespace Minesweeper
         }
 
         public override void HandleInput(InputState input)
-        {
-            if (input.MenuUp) UpClick();
-            if (input.MenuDown) DownClick();
-            //if (input.MenuSelect) ClickItem();
-            if (input.LastGamePadStates[0].Buttons.A == ButtonState.Pressed &&
-                input.CurrentGamePadStates[0].Buttons.A == ButtonState.Released) ClickItem();
-            if (input.MenuCancel) Back();
+        {            
+            
+            if (input.IsNewButtonPress(Buttons.Back)) Back();
             if (input.IsNewButtonPress(Buttons.DPadLeft)) LeftClick();
             if (input.IsNewButtonPress(Buttons.DPadRight)) RightClick();
+            if (input.IsNewButtonPress(Buttons.DPadUp)) UpClick();
+            if (input.IsNewButtonPress(Buttons.DPadDown)) DownClick();
+            if (input.IsNewButtonRelease(Buttons.A)) ClickItem();
         }
 
         protected void DownClick()
