@@ -207,8 +207,9 @@ namespace Minesweeper
             }
         }
 
-        public static void DrawNumbers(SpriteBatch batch, Texture2D[] numberTextures, int amount, int x, int y)
+        public static void DrawNumbers(SpriteBatch batch, Skin skin, int amount, int x, int y)
         {
+            batch.Draw(skin.numBox, new Vector2(x - 8, y - 8), Color.White);
             int[] amountNums = new int[3];
             if (amount >= 0)
             {
@@ -216,9 +217,9 @@ namespace Minesweeper
                 amountNums[0] = (amount - (amount % 100)) / 100;
                 amountNums[1] = ((amount - amountNums[0] * 100) - ((amount - amountNums[0] * 100) % 10)) / 10;
                 amountNums[2] = amount - (amountNums[0] * 100) - (amountNums[1] * 10);
-                batch.Draw(numberTextures[amountNums[0]], new Rectangle(x, y, 13, 23), Color.White);
-                batch.Draw(numberTextures[amountNums[1]], new Rectangle(x + 13, y, 13, 23), Color.White);
-                batch.Draw(numberTextures[amountNums[2]], new Rectangle(x + 26, y, 13, 23), Color.White);
+                batch.Draw(skin.numbers[amountNums[0]], new Rectangle(x, y, 13, 23), Color.White);
+                batch.Draw(skin.numbers[amountNums[1]], new Rectangle(x + 13, y, 13, 23), Color.White);
+                batch.Draw(skin.numbers[amountNums[2]], new Rectangle(x + 26, y, 13, 23), Color.White);
             }
             else
             {
@@ -228,9 +229,9 @@ namespace Minesweeper
                 else amountNums[1] = int.Parse(amountParts[amountParts.GetUpperBound(0) - 1].ToString());
                 amountNums[2] = int.Parse(amountParts[amountParts.GetUpperBound(0)].ToString());
                 if (amount < 0 & amount > -10) amountNums[1] = 0;
-                batch.Draw(numberTextures[10], new Rectangle(x, y, 13, 23), Color.White);
-                batch.Draw(numberTextures[amountNums[1]], new Rectangle(x + 13, y, 13, 23), Color.White);
-                batch.Draw(numberTextures[amountNums[2]], new Rectangle(x + 26, y, 13, 23), Color.White);
+                batch.Draw(skin.numbers[10], new Rectangle(x, y, 13, 23), Color.White);
+                batch.Draw(skin.numbers[amountNums[1]], new Rectangle(x + 13, y, 13, 23), Color.White);
+                batch.Draw(skin.numbers[amountNums[2]], new Rectangle(x + 26, y, 13, 23), Color.White);
             }
         }
     }

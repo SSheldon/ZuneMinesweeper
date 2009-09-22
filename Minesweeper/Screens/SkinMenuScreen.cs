@@ -63,10 +63,7 @@ namespace Minesweeper
         {
             Skin s = Game.skins[skinNames[tempSelectedSkin]];
             spriteBatch.Draw(blank, new Rectangle(22, 166, 196, 64), s.background);
-            spriteBatch.Draw(s.numBox, new Vector2(30, 191), Color.White);
-            spriteBatch.Draw(s.numbers[10], new Vector2(38, 199), Color.White);
-            spriteBatch.Draw(s.numbers[4], new Vector2(51, 199), Color.White);
-            spriteBatch.Draw(s.numbers[9], new Vector2(64, 199), Color.White);
+            MinesweeperGame.DrawNumbers(spriteBatch, s, -49, 38, 199);
             spriteBatch.Draw(s.tHidden, new Vector2(30, 174), Color.White);
             spriteBatch.Draw(s.tFlag, new Vector2(46, 174), Color.White);
             spriteBatch.Draw(s.tMine, new Vector2(62, 174), Color.White);

@@ -271,13 +271,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classic\Menu\number back.PNG">
-      <Name>number back</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Classic\Menu\left arrow.PNG">
       <Name>left arrow</Name>
       <Importer>TextureImporter</Importer>
@@ -356,11 +349,6 @@
   <ItemGroup>
     <Compile Include="Blue\Menu\left arrow.png">
       <Name>left arrow</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Blue\Menu\number back.png">
-      <Name>number back</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
@@ -635,11 +623,6 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Black\Menu\number back.PNG">
-      <Name>number back</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
     <Compile Include="Black\Menu\right arrow.PNG">
       <Name>right arrow</Name>
       <Importer>TextureImporter</Importer>
@@ -903,11 +886,6 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Gray\Menu\number back.png">
-      <Name>number back</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
     <Compile Include="Gray\Menu\right arrow.png">
       <Name>right arrow</Name>
       <Importer>TextureImporter</Importer>
@@ -1087,6 +1065,34 @@
       <Name>small</Name>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Classic\number back.PNG">
+      <Name>number back</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Gray\number back.png">
+      <Name>number back</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Blue\number back.png">
+      <Name>number back</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Black\number back.PNG">
+      <Name>number back</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\v3.0\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

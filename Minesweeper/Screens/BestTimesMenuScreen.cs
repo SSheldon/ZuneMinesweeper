@@ -34,14 +34,10 @@ namespace Minesweeper
 
         protected override void DrawSelect(SpriteBatch batch)
         {
-            batch.Draw(Game.Skin.numBox, new Vector2(170, 76), Color.White);
-            MinesweeperGame.DrawNumbers(batch, Game.Skin.numbers, Game.bestTimes[Difficulty.Beginner], 178, 84);
-            batch.Draw(Game.Skin.numBox, new Vector2(170, 116), Color.White);
-            MinesweeperGame.DrawNumbers(batch, Game.Skin.numbers, Game.bestTimes[Difficulty.Intermediate], 178, 124);
-            batch.Draw(Game.Skin.numBox, new Vector2(170, 156), Color.White);
-            MinesweeperGame.DrawNumbers(batch, Game.Skin.numbers, Game.bestTimes[Difficulty.Expert], 178, 164);
-            batch.Draw(Game.Skin.numBox, new Vector2(170, 196), Color.White);
-            MinesweeperGame.DrawNumbers(batch, Game.Skin.numbers, Game.bestTimes[Difficulty.Zune], 178, 204);
+            MinesweeperGame.DrawNumbers(batch, Game.Skin, Game.bestTimes[Difficulty.Beginner], 178, 84);
+            MinesweeperGame.DrawNumbers(batch, Game.Skin, Game.bestTimes[Difficulty.Intermediate], 178, 124);
+            MinesweeperGame.DrawNumbers(batch, Game.Skin, Game.bestTimes[Difficulty.Expert], 178, 164);
+            MinesweeperGame.DrawNumbers(batch, Game.Skin, Game.bestTimes[Difficulty.Zune], 178, 204);
             batch.Draw(Game.Skin.mSelect, new Vector2(14, 78 + selectedItem * 40), Color.White);
         }
 

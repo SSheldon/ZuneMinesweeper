@@ -293,21 +293,21 @@ namespace Minesweeper
             {
                 int surroundingFlags = 0;
 
-                if (!(selected.row == 0))
+                if (selected.row != 0)
                     if (field.tiles[(selected.row - 1), selected.col].Flagged) surroundingFlags++;
-                if (!(selected.col == 0))
+                if (selected.col != 0)
                     if (field.tiles[selected.row, (selected.col - 1)].Flagged) surroundingFlags++;
-                if (!(selected.row == 0) & !(selected.col == 0))
+                if (selected.row != 0 && selected.col != 0)
                     if (field.tiles[(selected.row - 1), (selected.col - 1)].Flagged) surroundingFlags++;
-                if (!(selected.col == width - 1))
+                if (selected.col != width - 1)
                     if (field.tiles[selected.row, (selected.col + 1)].Flagged) surroundingFlags++;
-                if (!(selected.row == 0) & !(selected.col == width - 1))
+                if (selected.row != 0 && selected.col != width - 1)
                     if (field.tiles[(selected.row - 1), (selected.col + 1)].Flagged) surroundingFlags++;
-                if (!(selected.row == height - 1))
+                if (selected.row != height - 1)
                     if (field.tiles[(selected.row + 1), selected.col].Flagged) surroundingFlags++;
-                if (!(selected.row == height - 1) & !(selected.col == 0))
+                if (selected.row != height - 1 && selected.col != 0)
                     if (field.tiles[(selected.row + 1), (selected.col - 1)].Flagged) surroundingFlags++;
-                if (!(selected.row == height - 1) & !(selected.col == width - 1))
+                if (selected.row != height - 1 && selected.col != width - 1)
                     if (field.tiles[(selected.row + 1), (selected.col + 1)].Flagged) surroundingFlags++;
 
                 return surroundingFlags;
@@ -389,52 +389,37 @@ namespace Minesweeper
             ScreenManager.SpriteBatch.Begin();
             DrawFieldBorder(ScreenManager.SpriteBatch);
             DrawField(ScreenManager.SpriteBatch);
-            DrawBackground(ScreenManager.SpriteBatch);
-            DrawNumbers(ScreenManager.SpriteBatch, flags, 16, 16);
-            DrawNumbers(ScreenManager.SpriteBatch, time, 185, 16);
+            //DrawBackground
+            ScreenManager.SpriteBatch.Draw(Game.Skin.top, new Rectangle(0, 0, 240, 56), Color.White);
+            MinesweeperGame.DrawNumbers(ScreenManager.SpriteBatch, Game.Skin, flags, 16, 16);
+            MinesweeperGame.DrawNumbers(ScreenManager.SpriteBatch, Game.Skin, time, 185, 16);
             DrawFace(ScreenManager.SpriteBatch);
-            DrawTileSelect(ScreenManager.SpriteBatch);
+            //DrawTileSelect
+            if (!faceSelected) ScreenManager.SpriteBatch.Draw(Game.Skin.select,
+                new Rectangle(8 + selected.col * 16 - corner.col * 16, 64 + selected.row * 16 - corner.row * 16, 16, 16), Color.White);
             ScreenManager.SpriteBatch.End();
-        }
-
-        void DrawBackground(SpriteBatch batch)
-        {
-            batch.Draw(Game.Skin.top, new Rectangle(0, 0, 240, 56), Color.White);
-        }
-
-        public void DrawNumbers(SpriteBatch batch, int amount, int x, int y)
-        {
-            int[] amountNums = new int[3];
-            if (amount >= 0)
-            {
-                if (amount > 999) amount = 999;
-                amountNums[0] = (amount - (amount % 100)) / 100;
-                amountNums[1] = ((amount - amountNums[0] * 100) - ((amount - amountNums[0] * 100) % 10)) / 10;
-                amountNums[2] = amount - (amountNums[0] * 100) - (amountNums[1] * 10);
-                batch.Draw(Game.Skin.numbers[amountNums[0]], new Rectangle(x, y, 13, 23), Color.White);
-                batch.Draw(Game.Skin.numbers[amountNums[1]], new Rectangle(x + 13, y, 13, 23), Color.White);
-                batch.Draw(Game.Skin.numbers[amountNums[2]], new Rectangle(x + 26, y, 13, 23), Color.White);
-            }
-            else
-            {
-                char[] amountParts = new char[10];
-                amountParts = amount.ToString().ToCharArray();
-                if (amount < 0 & amount > -10) amountNums[1] = 0;
-                else amountNums[1] = int.Parse(amountParts[amountParts.GetUpperBound(0) - 1].ToString());
-                amountNums[2] = int.Parse(amountParts[amountParts.GetUpperBound(0)].ToString());
-                if (amount < 0 & amount > -10) amountNums[1] = 0;
-                batch.Draw(Game.Skin.numbers[10], new Rectangle(x, y, 13, 23), Color.White);
-                batch.Draw(Game.Skin.numbers[amountNums[1]], new Rectangle(x + 13, y, 13, 23), Color.White);
-                batch.Draw(Game.Skin.numbers[amountNums[2]], new Rectangle(x + 26, y, 13, 23), Color.White);
-            }
         }
 
         void DrawFace(SpriteBatch batch)
         {
-            if (faceValue == Face.Happy) batch.Draw(Game.Skin.fHappy, new Rectangle(108, 16, 24, 24), Color.White);
-            else if (faceValue == Face.Win) batch.Draw(Game.Skin.fWin, new Rectangle(108, 16, 24, 24), Color.White);
-            else if (faceValue == Face.Dead) batch.Draw(Game.Skin.fDead, new Rectangle(108, 16, 24, 24), Color.White);
-            else batch.Draw(Game.Skin.fScared, new Rectangle(108, 16, 24, 24), Color.White);
+            Texture2D face = null;
+            switch (faceValue)
+            {
+                case Face.Happy:
+                    face = Game.Skin.fHappy;
+                    break;
+                case Face.Win:
+                    face = Game.Skin.fWin;
+                    break;
+                case Face.Dead:
+                    face = Game.Skin.fDead;
+                    break;
+                case Face.Scared:
+                    face = Game.Skin.fScared;
+                    break;
+            }
+            batch.Draw(face, new Rectangle(108, 16, 24, 24), Color.White);
+            face = null;
             if (faceSelected) batch.Draw(Game.Skin.faceSelect, new Rectangle(108, 16, 24, 24), Color.White);
         }
 
@@ -450,18 +435,13 @@ namespace Minesweeper
             batch.Draw(Game.Skin.borderBR, new Rectangle(8 + 16 * width - corner.col * 16, 64 + 16 * height - corner.row * 16, 8, 8), Color.White);
         }
 
-        void DrawTileSelect(SpriteBatch batch)
-        {
-            if (!faceSelected) batch.Draw(Game.Skin.select, new Rectangle(8 + selected.col * 16 - corner.col * 16, 64 + selected.row * 16 - corner.row * 16, 16, 16), Color.White);
-        }
-
         void DrawField(SpriteBatch batch)
         {
+            Texture2D tile;
             for (int row = 0; row < height; row++)
             {
                 for (int col = 0; col < width; col++)
-                {
-                    Texture2D tile;
+                {                    
                     if (gameState == GameState.Playing || gameState == GameState.NotPlaying)
                     {
                         if (field.tiles[row, col].Flagged) tile = Game.Skin.tFlag;
@@ -480,6 +460,7 @@ namespace Minesweeper
                     batch.Draw(tile, new Rectangle(8 + col * 16 - corner.col * 16, 64 + row * 16 - corner.row * 16, 16, 16), Color.White);
                 }
             }
+            tile = null;
         }
         #endregion
     }

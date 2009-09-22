@@ -44,12 +44,9 @@ namespace Minesweeper
 
         protected override void DrawSelect(SpriteBatch batch)
         {
-            batch.Draw(Game.Skin.numBox, new Vector2(162, 76), Color.White);
-            MinesweeperGame.DrawNumbers(batch, Game.Skin.numbers, tempHeight, 170, 84);
-            batch.Draw(Game.Skin.numBox, new Vector2(162, 116), Color.White);
-            MinesweeperGame.DrawNumbers(batch, Game.Skin.numbers, tempWidth, 170, 124);
-            batch.Draw(Game.Skin.numBox, new Vector2(162, 156), Color.White);
-            MinesweeperGame.DrawNumbers(batch, Game.Skin.numbers, tempMines, 170, 164);
+            MinesweeperGame.DrawNumbers(batch, Game.Skin, tempHeight, 170, 84);
+            MinesweeperGame.DrawNumbers(batch, Game.Skin, tempWidth, 170, 124);
+            MinesweeperGame.DrawNumbers(batch, Game.Skin, tempMines, 170, 164);
             if (selectedItem == 0 || selectedItem == 1 || selectedItem == 2)
             {
                 switch (selectedItem)

@@ -45,6 +45,7 @@ namespace Minesweeper
         public void InitializeTextures(string directory, ContentManager Content, SpriteFont normal, SpriteFont header, SpriteFont small)
         {
             top = Content.Load<Texture2D>(directory + "/top");
+            numBox = Content.Load<Texture2D>(directory + "/number back");
             for (int counter = 0; counter < 10; counter++)
             {
                 numbers[counter] = Content.Load<Texture2D>(directory + "/Numbers/" + counter);
@@ -76,7 +77,6 @@ namespace Minesweeper
             select = Content.Load<Texture2D>(directory + "/select");
             mTop = Content.Load<Texture2D>(directory + "/Menu/top");
             mSelect = Content.Load<Texture2D>(directory + "/Menu/select");
-            numBox = Content.Load<Texture2D>(directory + "/Menu/number back");
             rightArrow = Content.Load<Texture2D>(directory + "/Menu/right arrow");
             leftArrow = Content.Load<Texture2D>(directory + "/Menu/left arrow");
             this.normal = normal;
