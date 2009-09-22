@@ -43,7 +43,9 @@ namespace Minesweeper
         {
             if (input.MenuUp) UpClick();
             if (input.MenuDown) DownClick();
-            if (input.MenuSelect) ClickItem();
+            //if (input.MenuSelect) ClickItem();
+            if (input.LastGamePadStates[0].Buttons.A == ButtonState.Pressed &&
+                input.CurrentGamePadStates[0].Buttons.A == ButtonState.Released) ClickItem();
             if (input.MenuCancel) Back();
             if (input.IsNewButtonPress(Buttons.DPadLeft)) LeftClick();
             if (input.IsNewButtonPress(Buttons.DPadRight)) RightClick();
@@ -93,7 +95,6 @@ namespace Minesweeper
                 if (screens[i] is GameplayScreen)
                 {
                     (screens[i] as GameplayScreen).SetGame(height, width, mines);
-                    (screens[i] as GameplayScreen).SelectFace();
                     break;
                 }
             }

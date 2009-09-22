@@ -140,11 +140,6 @@ namespace Minesweeper
                 if (gameState == GameState.Playing) gameState = GameState.NotPlaying;
                 ScreenManager.AddScreen(new MainMenuScreen(Game, true));
             }
-            if (!Movable && input.MenuSelect)
-            {
-                SetGame(height, width, mines);
-                SelectFace();
-            }
             if (Movable)
             {
                 if (!faceSelected)
@@ -178,6 +173,8 @@ namespace Minesweeper
                 }
 
             }
+            else if (input.LastGamePadStates[0].Buttons.A == ButtonState.Pressed &&
+                input.CurrentGamePadStates[0].Buttons.A == ButtonState.Released) SetGame(height, width, mines);
             //DPAD Controls
             if (Movable)
             {
@@ -212,11 +209,6 @@ namespace Minesweeper
                     else selected.col = 0;
                 }
             }
-        }
-
-        public void SelectFace()
-        {
-            faceSelected = true;
         }
 
         void TileClick()
