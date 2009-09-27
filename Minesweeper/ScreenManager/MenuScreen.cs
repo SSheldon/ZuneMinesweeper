@@ -43,10 +43,10 @@ namespace Minesweeper
         {            
             
             if (input.IsNewButtonPress(Buttons.Back)) Back();
-            if (input.IsNewButtonPress(Buttons.DPadLeft)) LeftClick();
-            if (input.IsNewButtonPress(Buttons.DPadRight)) RightClick();
-            if (input.IsNewButtonPress(Buttons.DPadUp)) UpClick();
-            if (input.IsNewButtonPress(Buttons.DPadDown)) DownClick();
+            if (input.IsNewButtonTick(Buttons.DPadLeft)) LeftClick();
+            if (input.IsNewButtonTick(Buttons.DPadRight)) RightClick();
+            if (input.IsNewButtonTick(Buttons.DPadUp)) UpClick();
+            if (input.IsNewButtonTick(Buttons.DPadDown)) DownClick();
             if (input.IsNewButtonRelease(Buttons.A)) ClickItem();
         }
 
@@ -88,15 +88,7 @@ namespace Minesweeper
 
         protected void NewGame(int height, int width, int mines)
         {
-            GameScreen[] screens = ScreenManager.GetScreens();
-            for (int i = 0; i < screens.Length; i++)
-            {
-                if (screens[i] is GameplayScreen)
-                {
-                    (screens[i] as GameplayScreen).SetGame(height, width, mines);
-                    break;
-                }
-            }
+            Game.GameplayScreen.SetGame(height, width, mines);
             Game.ExitAllMenuScreens();
         }
 

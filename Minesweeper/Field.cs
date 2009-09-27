@@ -1,10 +1,48 @@
 ﻿using System;
+using System.Collections;
 
-public class Field
+public class Field : IEnumerable
 {
     int height, width, mines;
-    public Tile[,] tiles;
-    
+    Tile[,] tiles;
+    public int Height
+    {
+        get { return height; }
+    }
+    public int Width
+    {
+        get { return width; }
+    }
+    public int Mines
+    {
+        get { return mines; }
+    }
+
+    public Tile this[int row, int col]
+    {
+        get { return tiles[row, col]; }
+    }
+
+    public void Reveal(int row, int col)
+    {
+        tiles[row, col].Reveal();
+    }
+
+    public void Hide(int row, int col)
+    {
+        tiles[row, col].Hide();
+    }
+
+    public void Flag(int row, int col)
+    {
+        tiles[row, col].Flag();
+    }
+
+    public void Unflag(int row, int col)
+    {
+        tiles[row, col].Unflag();
+    }
+
     public Field(int height, int width, int mines)
     {
         this.height = height;
@@ -15,14 +53,21 @@ public class Field
         AssignTileNumbers();
     }
 
-    //randomly generates mines
+    public IEnumerator GetEnumerator()
+    {
+        return new FieldEnumerator(this);
+    }
+
+    /// <summary>
+    /// Randomly generates mines and assigns them to tiles.
+    /// </summary>
     void GenerateMines()
     {
         int[] randomNumbers = new int[mines];
         Random rand = new Random();
         for (int counter = 0; counter < mines; counter++)
         {
-            bool alreadyContained = false;
+            bool alreadyContained;
             do
             {
                 alreadyContained = false;
@@ -40,7 +85,9 @@ public class Field
         }
     }
 
-    //calculates tile numbers
+    /// <summary>
+    /// Calculates tile numbers and assigns them.
+    /// </summary>
     void AssignTileNumbers()
     {
         for (int row = 0; row < height; row++)
@@ -55,85 +102,73 @@ public class Field
     int TileNumber(int row, int col)
     {
         int accumulator = 0;
-        if (tiles[row, col].Mined == true)
-        {
-            accumulator = 9;
-        }
-        else
-        {
-            if (row != 0)
-            {
-                if (tiles[(row - 1), col].Mined)
-                {
-                    accumulator++;
-                }
-            }
-            if (col != 0)
-            {
-                if (tiles[row, (col - 1)].Mined)
-                {
-                    accumulator++;
-                }
-            }
-            if (row != 0 && col != 0)
-            {
-                if (tiles[(row - 1), (col - 1)].Mined)
-                {
-                    accumulator++;
-                }
-            }
-            if (col != width - 1)
-            {
-                if (tiles[row, (col + 1)].Mined)
-                {
-                    accumulator++;
-                }
-            }
-            if (row != 0 && col != width - 1)
-            {
-                if (tiles[(row - 1), (col + 1)].Mined)
-                {
-                    accumulator++;
-                }
-            }
-            if (row != height - 1)
-            {
-                if (tiles[(row + 1), col].Mined)
-                {
-                    accumulator++;
-                }
-            }
-            if (row != height - 1 && col != 0)
-            {
-                if (tiles[(row + 1), (col - 1)].Mined)
-                {
-                    accumulator++;
-                }
-            }
-            if (row != height - 1 && col != width - 1)
-            {
-                if (tiles[(row + 1), (col + 1)].Mined)
-                {
-                    accumulator++;
-                }
-            }
-        }
+        if (row != 0 && tiles[(row - 1), col].Mined)
+            accumulator++;
+        if (col != 0 && tiles[row, (col - 1)].Mined)
+            accumulator++;
+        if (row != 0 && col != 0 && tiles[(row - 1), (col - 1)].Mined)
+            accumulator++;
+        if (col != width - 1 && tiles[row, (col + 1)].Mined)
+            accumulator++;
+        if (row != 0 && col != width - 1 && tiles[(row - 1), (col + 1)].Mined)
+            accumulator++;
+        if (row != height - 1 && tiles[(row + 1), col].Mined)
+            accumulator++;
+        if (row != height - 1 && col != 0 && tiles[(row + 1), (col - 1)].Mined)
+            accumulator++;
+        if (row != height - 1 && col != width - 1 && tiles[(row + 1), (col + 1)].Mined)
+            accumulator++;
         return accumulator;
+    }
+
+    /// <summary>
+    /// Returns a value indicating the number of flagged tiles the specified tile is touching.
+    /// </summary>
+    public int FlagsTouching(int row, int col)
+    {
+        int surroundingFlags = 0;
+
+        if (row != 0 && tiles[(row - 1), col].Flagged)
+            surroundingFlags++;
+        if (col != 0 && tiles[row, (col - 1)].Flagged)
+            surroundingFlags++;
+        if (row != 0 && col != 0 && tiles[(row - 1), (col - 1)].Flagged)
+            surroundingFlags++;
+        if (col != width - 1 && tiles[row, (col + 1)].Flagged)
+            surroundingFlags++;
+        if (row != 0 && col != width - 1 && tiles[(row - 1), (col + 1)].Flagged)
+            surroundingFlags++;
+        if (row != height - 1 && tiles[(row + 1), col].Flagged)
+            surroundingFlags++;
+        if (row != height - 1 && col != 0 && tiles[(row + 1), (col - 1)].Flagged)
+            surroundingFlags++;
+        if (row != height - 1 && col != width - 1 && tiles[(row + 1), (col + 1)].Flagged)
+            surroundingFlags++;
+
+        return surroundingFlags;
     }
 
     /// <summary>
     /// Reveals all tiles touching the specified tile.
     /// </summary>
-    public void RevealTouching(int row, int col)
+    void RevealTouching(int row, int col)
     {
-        if (row != 0) tiles[(row - 1), col].Reveal();
-        if (col != 0) tiles[row, (col - 1)].Reveal();
-        if (row != 0 && col != 0) tiles[(row - 1), (col - 1)].Reveal();
-        if (col != width - 1) tiles[row, (col + 1)].Reveal();
-        if (row != 0 && col != width - 1) tiles[(row - 1), (col + 1)].Reveal();
-        if (row != height - 1) tiles[(row + 1), col].Reveal();
-        if (row != height - 1 && col != 0) tiles[(row + 1), (col - 1)].Reveal();
-        if (row != height - 1 && col != width - 1) tiles[(row + 1), (col + 1)].Reveal();
+        if (row != 0)
+            tiles[(row - 1), col].Reveal();
+        if (col != 0)
+            tiles[row, (col - 1)].Reveal();
+        if (row != 0 && col != 0)
+            tiles[(row - 1), (col - 1)].Reveal();
+        if (col != width - 1)
+            tiles[row, (col + 1)].Reveal();
+        if (row != 0 && col != width - 1)
+            tiles[(row - 1), (col + 1)].Reveal();
+        if (row != height - 1)
+            tiles[(row + 1), col].Reveal();
+        if (row != height - 1 && col != 0)
+            tiles[(row + 1), (col - 1)].Reveal();
+        if (row != height - 1 && col != width - 1)
+            tiles[(row + 1), (col + 1)].Reveal();
     }
 
     /// <summary>
@@ -142,22 +177,22 @@ public class Field
     public bool TouchingHiddenTile(int row, int col)
     {
         bool anyHidden = false;
-        if (!(row == 0)) 
-            if (tiles[(row - 1), col].Hidden == true & tiles[(row - 1), col].Flagged == false) anyHidden = true;
-        if (!(col == 0)) 
-            if (tiles[row, (col - 1)].Hidden == true & tiles[row, (col - 1)].Flagged == false) anyHidden = true;
-        if (!(row == 0) & !(col == 0)) 
-            if (tiles[(row - 1), (col - 1)].Hidden == true & tiles[(row - 1), (col - 1)].Flagged == false) anyHidden = true;
-        if (!(col == width - 1)) 
-            if (tiles[row, (col + 1)].Hidden == true & tiles[row, (col + 1)].Flagged == false) anyHidden = true;
-        if (!(row == 0) & !(col == width - 1)) 
-            if (tiles[(row - 1), (col + 1)].Hidden == true & tiles[(row - 1), (col + 1)].Flagged == false) anyHidden = true;
-        if (!(row == height - 1)) 
-            if (tiles[(row + 1), col].Hidden == true & tiles[(row + 1), col].Flagged == false) anyHidden = true;
-        if (!(row == height - 1) & !(col == 0)) 
-            if (tiles[(row + 1), (col - 1)].Hidden == true & tiles[(row + 1), (col - 1)].Flagged == false) anyHidden = true;
-        if (!(row == height - 1) & !(col == width - 1)) 
-            if (tiles[(row + 1), (col + 1)].Hidden == true & tiles[(row + 1), (col + 1)].Flagged == false) anyHidden = true;
+        if (row != 0) 
+            if (tiles[(row - 1), col].Hidden && !tiles[(row - 1), col].Flagged) anyHidden = true;
+        if (col != 0) 
+            if (tiles[row, (col - 1)].Hidden && !tiles[row, (col - 1)].Flagged) anyHidden = true;
+        if (row != 0 && col != 0)
+            if (tiles[(row - 1), (col - 1)].Hidden && !tiles[(row - 1), (col - 1)].Flagged) anyHidden = true;
+        if (col != width - 1)
+            if (tiles[row, (col + 1)].Hidden && !tiles[row, (col + 1)].Flagged) anyHidden = true;
+        if (row != 0 && col != width - 1)
+            if (tiles[(row - 1), (col + 1)].Hidden && !tiles[(row - 1), (col + 1)].Flagged) anyHidden = true;
+        if (row != height - 1)
+            if (tiles[(row + 1), col].Hidden && !tiles[(row + 1), col].Flagged) anyHidden = true;
+        if (row != height - 1 && col != 0)
+            if (tiles[(row + 1), (col - 1)].Hidden && !tiles[(row + 1), (col - 1)].Flagged) anyHidden = true;
+        if (row != height - 1 && col != width - 1)
+            if (tiles[(row + 1), (col + 1)].Hidden && !tiles[(row + 1), (col + 1)].Flagged) anyHidden = true;
         return anyHidden;
     }
 
@@ -169,12 +204,10 @@ public class Field
         get
         {
             bool moreTilesToReveal = false;
-            for (int row = 0; row < height; row++)
+            foreach (Tile tile in this)
             {
-                for (int col = 0; col < width; col++)
-                {
-                    if (!tiles[row, col].Mined && tiles[row, col].Hidden) moreTilesToReveal = true;
-                }
+                if (!tile.Mined && tile.Hidden) moreTilesToReveal = true;
+                if (moreTilesToReveal) break;
             }
             return !moreTilesToReveal;
         }
@@ -186,8 +219,8 @@ public class Field
     public bool Click(int row, int col)
     {
         tiles[row, col].Reveal();
-        bool checkAgain;
         //check to see if there are zero tiles touching hidden tiles
+        bool checkAgain;
         do
         {
             checkAgain = false;
@@ -203,9 +236,8 @@ public class Field
                     }
                 }
             }
-        } while (checkAgain == true);
-        if (tiles[row, col].Mined && !tiles[row, col].Flagged) return true;
-        else return false;
+        } while (checkAgain);
+         return tiles[row, col].Mined && !tiles[row, col].Flagged;
     }
 
     /// <summary>
@@ -240,14 +272,42 @@ public class Field
         get
         {
             bool allHidden = true;
-            for (int row = 0; row < height; row++)
+            foreach (Tile tile in this)
             {
-                for (int col = 0; col < width; col++)
-                {
-                    if (!tiles[row, col].Hidden) allHidden = false;
-                }
+                if (!tile.Hidden) allHidden = false;
+                if (!allHidden) break;
             }
             return allHidden;
         }
+    }
+}
+
+public class FieldEnumerator : IEnumerator
+{
+    int position = -1;
+    Field field;
+
+    public FieldEnumerator(Field field)
+    {
+        this.field = field;
+    }
+
+    public object Current
+    {
+        get
+        {
+            return field[position / field.Width, position % field.Width];
+        }
+    }
+
+    public bool MoveNext()
+    {
+        position++;
+        return (position < field.Height * field.Width);
+    }
+
+    public void Reset()
+    {
+        position = -1;
     }
 }

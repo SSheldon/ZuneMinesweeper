@@ -41,6 +41,15 @@ namespace Minesweeper
 
             screenManager = new ScreenManager(this);
             Components.Add(screenManager);
+
+            this.Deactivated += new EventHandler(MinesweeperGame_Deactivated);
+        }
+
+        void MinesweeperGame_Deactivated(object sender, EventArgs e)
+        {
+            GameplayScreen screen = GameplayScreen;
+            if (screen != null) screen.Back();
+            screen = null;
         }
 
         protected override void Initialize()
@@ -204,6 +213,19 @@ namespace Minesweeper
                 {
                     screens[i].ExitScreen();
                 }
+            }
+        }
+
+        public GameplayScreen GameplayScreen
+        {
+            get
+            {
+                GameScreen[] screens = screenManager.GetScreens();
+                for (int i = 0; i < screens.Length; i++)
+                {
+                    if (screens[i] is GameplayScreen) return screens[i] as GameplayScreen;
+                }
+                return null;
             }
         }
 

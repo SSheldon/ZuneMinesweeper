@@ -2,7 +2,7 @@
 <XnaContent>
   <Asset Type="SkinfoWriter.Skinfo">
     <name>Black</name>
-    <creator>wizard7926</creator>
+    <creator>Ryan Neary</creator>
     <itemsBacked>false</itemsBacked>
     <headersBacked>false</headersBacked>
     <background>0 0 0</background>
