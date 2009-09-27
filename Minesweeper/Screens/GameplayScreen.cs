@@ -129,43 +129,10 @@ namespace Minesweeper
         /// <param name="input">The state of the gamepads</param>
         public override void HandleInput(InputState input)
         {
-            FieldLocation oldSelected = selected;
             if (input.IsNewButtonPress(Buttons.Back)) Back();
             if (Movable)
             {
-                if (!faceSelected)
-                    if ((Game.options.FlagWithPlay && input.IsButtonPressed(Buttons.A)) ||
-                        (!Game.options.FlagWithPlay && input.IsButtonPressed(Buttons.B))) 
-                        faceValue = Face.Scared;
-                if (faceValue == Face.Scared)
-                    if ((Game.options.FlagWithPlay && !input.IsButtonPressed(Buttons.A)) ||
-                        (!Game.options.FlagWithPlay && !input.IsButtonPressed(Buttons.B)))
-                        faceValue = Face.Happy;
-                if (input.IsNewButtonRelease(Buttons.A))
-                {
-                    if (faceSelected) SetGame(Height, Width, Mines);
-                    else if (Game.options.FlagWithPlay)
-                    {
-                        if (field[selected.row, selected.col].Hidden) TileClick();
-                        else SurroundClick();
-                    }
-                    else TileFlag();
-                }
-                if (input.IsNewButtonRelease(Buttons.B) && !faceSelected)
-                {
-                    if (Game.options.FlagWithPlay) TileFlag();
-                    else
-                    {
-                        if (field[selected.row, selected.col].Hidden) TileClick();
-                        else SurroundClick();
-                    }
-                }
-
-            }
-            else if (input.IsNewButtonRelease(Buttons.A)) SetGame(Height, Width, Mines);
-            //DPAD Controls
-            if (Movable)
-            {
+                #region DPAD CONTROLS
                 if (input.IsNewButtonTick(Buttons.DPadUp))
                 {
                     if (faceSelected)
@@ -196,8 +163,36 @@ namespace Minesweeper
                     if (selected.col < Width - 1) selected.col++;
                     else selected.col = 0;
                 }
+                #endregion
+                if (!faceSelected)
+                    if ((Game.options.FlagWithPlay && input.IsButtonPressed(Buttons.A)) ||
+                        (!Game.options.FlagWithPlay && input.IsButtonPressed(Buttons.B))) 
+                        faceValue = Face.Scared;
+                if (faceValue == Face.Scared)
+                    if ((Game.options.FlagWithPlay && !input.IsButtonPressed(Buttons.A)) ||
+                        (!Game.options.FlagWithPlay && !input.IsButtonPressed(Buttons.B)))
+                        faceValue = Face.Happy;
+                if (input.IsNewButtonRelease(Buttons.A))
+                {
+                    if (faceSelected) SetGame(Height, Width, Mines);
+                    else if (Game.options.FlagWithPlay)
+                    {
+                        if (field[selected.row, selected.col].Hidden) TileClick();
+                        else SurroundClick();
+                    }
+                    else TileFlag();
+                }
+                if (input.IsNewButtonRelease(Buttons.B) && !faceSelected)
+                {
+                    if (Game.options.FlagWithPlay) TileFlag();
+                    else
+                    {
+                        if (field[selected.row, selected.col].Hidden) TileClick();
+                        else SurroundClick();
+                    }
+                }
             }
-            if (Game.options.CantSelectRevealed && !field[selected.row, selected.col].Hidden) MoveSelectToHidden(oldSelected);
+            else if (input.IsNewButtonRelease(Buttons.A)) SetGame(Height, Width, Mines);
         }
 
         public void Back()
@@ -346,11 +341,6 @@ namespace Minesweeper
             {
                 faceValue = Face.Happy;
             }
-        }
-
-        void MoveSelectToHidden(FieldLocation oldSelected)
-        {
-
         }
 
         #region DRAWING

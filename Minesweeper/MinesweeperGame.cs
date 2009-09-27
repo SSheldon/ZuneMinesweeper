@@ -67,7 +67,7 @@ namespace Minesweeper
             bestTimes.Add(Difficulty.Zune, 999);
             GetBestTimes();
 
-            options = new Options(false, true, false, "Blue");
+            options = new Options(true, false, "Blue");
 
             base.Initialize();
         }
@@ -178,7 +178,6 @@ namespace Minesweeper
                 StreamReader reader = new StreamReader(new FileStream(Path.Combine(container.Path, "options.txt"), FileMode.Open));
                 try
                 {
-                    options.CantSelectRevealed = bool.Parse(reader.ReadLine());
                     options.FlagWithPlay = bool.Parse(reader.ReadLine());
                     options.SelectedSkin = reader.ReadLine();
                     options.UseTouch = bool.Parse(reader.ReadLine());
@@ -196,7 +195,6 @@ namespace Minesweeper
         public void UpdateOptions()
         {
             StreamWriter writer = new StreamWriter(new FileStream(Path.Combine(container.Path, "options.txt"), FileMode.Create));
-            writer.WriteLine(options.CantSelectRevealed);
             writer.WriteLine(options.FlagWithPlay);
             writer.WriteLine(options.SelectedSkin);
             writer.WriteLine(options.UseTouch);
