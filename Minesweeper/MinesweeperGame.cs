@@ -46,9 +46,9 @@ namespace Minesweeper
         }
 
         void MinesweeperGame_Deactivated(object sender, EventArgs e)
-        {
+        {            
             GameplayScreen screen = GameplayScreen;
-            if (screen != null) screen.Back();
+            if (screen != null && screen.IsActive) screen.Back();
             screen = null;
         }
 
