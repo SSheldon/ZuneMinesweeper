@@ -25,22 +25,22 @@ public class Field : IEnumerable
 
     public void Reveal(int row, int col)
     {
-        tiles[row, col].Reveal();
+        if (!tiles[row, col].Flagged) tiles[row, col].Hidden = false;
     }
 
     public void Hide(int row, int col)
     {
-        tiles[row, col].Hide();
+        tiles[row, col].Hidden = true;
     }
 
     public void Flag(int row, int col)
     {
-        tiles[row, col].Flag();
+        if (tiles[row, col].Hidden) tiles[row, col].Flagged = true;
     }
 
     public void Unflag(int row, int col)
     {
-        tiles[row, col].Unflag();
+        tiles[row, col].Flagged = false;
     }
 
     public Field(int height, int width, int mines)
@@ -154,21 +154,21 @@ public class Field : IEnumerable
     void RevealTouching(int row, int col)
     {
         if (row != 0)
-            tiles[(row - 1), col].Reveal();
+            Reveal((row - 1), col);
         if (col != 0)
-            tiles[row, (col - 1)].Reveal();
+            Reveal(row, (col - 1));
         if (row != 0 && col != 0)
-            tiles[(row - 1), (col - 1)].Reveal();
+            Reveal((row - 1), (col - 1));
         if (col != width - 1)
-            tiles[row, (col + 1)].Reveal();
+            Reveal(row, (col + 1));
         if (row != 0 && col != width - 1)
-            tiles[(row - 1), (col + 1)].Reveal();
+            Reveal((row - 1), (col + 1));
         if (row != height - 1)
-            tiles[(row + 1), col].Reveal();
+            Reveal((row + 1), col);
         if (row != height - 1 && col != 0)
-            tiles[(row + 1), (col - 1)].Reveal();
+            Reveal((row + 1), (col - 1));
         if (row != height - 1 && col != width - 1)
-            tiles[(row + 1), (col + 1)].Reveal();
+            Reveal((row + 1), (col + 1));
     }
 
     /// <summary>
@@ -215,7 +215,7 @@ public class Field : IEnumerable
     /// </summary>
     public bool Click(int row, int col)
     {
-        tiles[row, col].Reveal();
+        Reveal(row, col);
         //check to see if there are zero tiles touching hidden tiles
         bool checkAgain;
         do
