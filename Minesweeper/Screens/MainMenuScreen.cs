@@ -16,16 +16,16 @@ namespace Minesweeper
             resume.Clicked += new ItemClick(Back);
             Add(0, resume);
             newGame = new MenuItem("New Game");
-            newGame.Clicked += new ItemClick(NewGameClick);
+            newGame.Clicked += () => ScreenManager.AddScreen(new NewGameMenuScreen(Game));
             Add(1, newGame);
             music = new MenuItem("Music");
             music.Clicked += new ItemClick(Guide.Show);
             Add(2, music);
             bestTimes = new MenuItem("Best Times");
-            bestTimes.Clicked += new ItemClick(BestTimesClick);
+            bestTimes.Clicked += () => ScreenManager.AddScreen(new BestTimesMenuScreen(Game));
             Add(3, bestTimes);
             options = new MenuItem("Options");
-            options.Clicked += new ItemClick(OptionsClick);
+            options.Clicked += () => ScreenManager.AddScreen(new OptionsMenuScreen(Game));
             Add(4, options);
             exit = new MenuItem("Exit");
             exit.Clicked += new ItemClick(Game.Exit);
@@ -35,21 +35,6 @@ namespace Minesweeper
         protected override void DrawHeader(SpriteBatch batch)
         {
             batch.Draw(Game.Skin.mTop, new Vector2(0, 0), Color.White);
-        }
-
-        void NewGameClick()
-        {
-            ScreenManager.AddScreen(new NewGameMenuScreen(Game));
-        }
-
-        void OptionsClick()
-        {
-            ScreenManager.AddScreen(new OptionsMenuScreen(Game));
-        }
-
-        void BestTimesClick()
-        {
-            ScreenManager.AddScreen(new BestTimesMenuScreen(Game));
         }
 
         protected override void Back()

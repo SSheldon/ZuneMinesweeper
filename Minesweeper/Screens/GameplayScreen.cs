@@ -30,7 +30,7 @@ namespace Minesweeper
         Field field;
         int flags, time;
         double totalTime;
-        FieldLocation selected, selectedMine, corner;
+        FieldLocation selected, corner;
         enum Face { Happy, Win, Dead, Scared };
         Face faceValue;
         enum GameState { NotPlaying, Playing, Won, Lost };
@@ -175,21 +175,13 @@ namespace Minesweeper
                 if (input.IsNewButtonRelease(Buttons.A))
                 {
                     if (faceSelected) SetGame(Height, Width, Mines);
-                    else if (Game.options.FlagWithPlay)
-                    {
-                        if (field[selected.row, selected.col].Hidden) TileClick();
-                        else SurroundClick();
-                    }
+                    else if (Game.options.FlagWithPlay) Click();
                     else TileFlag();
                 }
                 if (input.IsNewButtonRelease(Buttons.B) && !faceSelected)
                 {
                     if (Game.options.FlagWithPlay) TileFlag();
-                    else
-                    {
-                        if (field[selected.row, selected.col].Hidden) TileClick();
-                        else SurroundClick();
-                    }
+                    else Click();
                 }
             }
             else if (input.IsNewButtonRelease(Buttons.A)) SetGame(Height, Width, Mines);
@@ -201,64 +193,59 @@ namespace Minesweeper
             ScreenManager.AddScreen(new MainMenuScreen(Game, true));
         }
 
-        void TileClick()
+        void Click()
         {
-            if (field.AllHidden) field.MoveMine(selected.row, selected.col);
-            if (gameState != GameState.Playing) gameState = GameState.Playing;
-            if (field.Click(selected.row, selected.col)) //Game over
+            if (!field[selected.row, selected.col].Hidden && field.FlagsTouching(selected.row, selected.col) != field[selected.row, selected.col].Number)
             {
-                gameState = GameState.Lost;
-                for (int row = 0; row < Height; row++)
-                {
-                    for (int col = 0; col < Width; col++)
-                    {
-                        if (field[row, col].Mined) field.Reveal(row, col);
-                    }
-                }
-                selectedMine = selected;
-                faceValue = Face.Dead;
-                faceSelected = true;
+                faceValue = Face.Happy;
             }
             else
             {
-                if (field.AllUnminedRevealed) //Game won
+                if (field.AllHidden) field.MoveMine(selected.row, selected.col);
+                if (gameState != GameState.Playing) gameState = GameState.Playing;
+                bool mineClicked;
+                if (field[selected.row, selected.col].Hidden) mineClicked = field.Click(selected.row, selected.col);
+                else mineClicked = field.ClickSurrounding(selected.row, selected.col);
+                if (mineClicked) //Game over
                 {
-                    gameState = GameState.Won;
-                    for (int row = 0; row < Height; row++)
+                    gameState = GameState.Lost;
+                    faceValue = Face.Dead;
+                    faceSelected = true;
+                }
+                else
+                {
+                    if (field.AllUnminedRevealed) //Game won
                     {
-                        for (int col = 0; col < Width; col++)
+                        gameState = GameState.Won;
+                        faceValue = Face.Win;
+                        faceSelected = true;
+                        flags = 0;
+                        if (Height == 9 && Width == 9 && Mines == 10 && time < Game.bestTimes[Difficulty.Beginner])
                         {
-                            if (field[row, col].Mined) field.Flag(row, col);
+                            Game.bestTimes[Difficulty.Beginner] = time;
+                            Game.UpdateBestTime(Difficulty.Beginner);
+                        }
+                        if (Height == 16 && Width == 16 && Mines == 40 && time < Game.bestTimes[Difficulty.Intermediate])
+                        {
+                            Game.bestTimes[Difficulty.Intermediate] = time;
+                            Game.UpdateBestTime(Difficulty.Intermediate);
+                        }
+                        if (Height == 24 && Width == 30 && Mines == 99 && time < Game.bestTimes[Difficulty.Expert])
+                        {
+                            Game.bestTimes[Difficulty.Expert] = time;
+                            Game.UpdateBestTime(Difficulty.Expert);
+                        }
+                        if (Height == 15 && Width == 14 && Mines == 30 && time < Game.bestTimes[Difficulty.Zune])
+                        {
+                            Game.bestTimes[Difficulty.Zune] = time;
+                            Game.UpdateBestTime(Difficulty.Zune);
                         }
                     }
-                    flags = 0;
-                    faceValue = Face.Win;
-                    faceSelected = true;
-                    if (Height == 9 && Width == 9 && Mines == 10 && time < Game.bestTimes[Difficulty.Beginner])
+                    else //Game continues
                     {
-                        Game.bestTimes[Difficulty.Beginner] = time;
-                        Game.UpdateBestTime(Difficulty.Beginner);
+                        gameState = GameState.Playing;
+                        faceValue = Face.Happy;
                     }
-                    if (Height == 16 && Width == 16 && Mines == 40 && time < Game.bestTimes[Difficulty.Intermediate])
-                    {
-                        Game.bestTimes[Difficulty.Intermediate] = time;
-                        Game.UpdateBestTime(Difficulty.Intermediate);
-                    }
-                    if (Height == 24 && Width == 30 && Mines == 99 && time < Game.bestTimes[Difficulty.Expert])
-                    {
-                        Game.bestTimes[Difficulty.Expert] = time;
-                        Game.UpdateBestTime(Difficulty.Expert);
-                    }
-                    if (Height == 15 && Width == 14 && Mines == 30 && time < Game.bestTimes[Difficulty.Zune])
-                    {
-                        Game.bestTimes[Difficulty.Zune] = time;
-                        Game.UpdateBestTime(Difficulty.Zune);
-                    }
-                }
-                else //Game continues
-                {
-                    gameState = GameState.Playing;
-                    faceValue = Face.Happy;
                 }
             }
         }
@@ -277,69 +264,6 @@ namespace Minesweeper
                     field.Unflag(selected.row, selected.col);
                     flags++;
                 }
-            }
-        }
-
-        void SurroundClick()
-        {
-            if (field.FlagsTouching(selected.row, selected.col) == field[selected.row, selected.col].Number)
-            {
-                FieldLocation originalSelected = selected;
-
-                if (!(originalSelected.row == 0))
-                {
-                    selected = new FieldLocation(originalSelected.row - 1, originalSelected.col);
-                    TileClick();
-                }
-                if (gameState != GameState.Playing) return;
-                if (!(originalSelected.col == 0))
-                {
-                    selected = new FieldLocation(originalSelected.row, originalSelected.col - 1);
-                    TileClick();
-                }
-                if (gameState != GameState.Playing) return;
-                if (!(originalSelected.row == 0) & !(originalSelected.col == 0))
-                {
-                    selected = new FieldLocation(originalSelected.row - 1, originalSelected.col - 1);
-                    TileClick();
-                }
-                if (gameState != GameState.Playing) return;
-                if (!(originalSelected.col == Width - 1))
-                {
-                    selected = new FieldLocation(originalSelected.row, originalSelected.col + 1);
-                    TileClick();
-                }
-                if (gameState != GameState.Playing) return;
-                if (!(originalSelected.row == 0) & !(originalSelected.col == Width - 1))
-                {
-                    selected = new FieldLocation(originalSelected.row - 1, originalSelected.col + 1);
-                    TileClick();
-                }
-                if (gameState != GameState.Playing) return;
-                if (!(originalSelected.row == Height - 1))
-                {
-                    selected = new FieldLocation(originalSelected.row + 1, originalSelected.col);
-                    TileClick();
-                }
-                if (gameState != GameState.Playing) return;
-                if (!(originalSelected.row == Height - 1) & !(originalSelected.col == 0))
-                {
-                    selected = new FieldLocation(originalSelected.row + 1, originalSelected.col - 1);
-                    TileClick();
-                }
-                if (gameState != GameState.Playing) return;
-                if (!(originalSelected.row == Height - 1) & !(originalSelected.col == Width - 1))
-                {
-                    selected = new FieldLocation(originalSelected.row + 1, originalSelected.col + 1);
-                    TileClick();
-                }
-                if (gameState != GameState.Playing) return;
-
-                selected = originalSelected;
-            }
-            else
-            {
-                faceValue = Face.Happy;
             }
         }
 
@@ -418,11 +342,32 @@ namespace Minesweeper
                     }
                     else
                     {
-                        if (field[row, col].Flagged & !field[row, col].Mined) tile = Game.Skin.tNotMine;
-                        else if (field[row, col].Flagged) tile = Game.Skin.tFlag;
+                        if (field[row, col].Flagged)
+                        {
+                            if (!field[row, col].Mined) tile = Game.Skin.tNotMine;
+                            else tile = Game.Skin.tFlag;
+                        }                        
+                        else if (field[row, col].Mined)
+                        {
+                            if (gameState == GameState.Lost)
+                            {
+                                if (field[selected.row, selected.col].Mined)
+                                {
+                                    if (row == selected.row && col == selected.col) tile = Game.Skin.tClickedMine;
+                                    else tile = Game.Skin.tMine;
+                                }
+                                else //unflagged mines around selected are clicked
+                                {
+                                    if (Math.Abs(row - selected.row) <= 1 && Math.Abs(col - selected.col) <= 1 &&
+                                        !field[row, col].Flagged && field[row, col].Mined) tile = Game.Skin.tClickedMine;
+                                    else tile = Game.Skin.tMine;
+                                }
+                            }
+                            else //gameState == GameState.Won
+                                tile = Game.Skin.tFlag;
+
+                        }
                         else if (field[row, col].Hidden) tile = Game.Skin.tHidden;
-                        else if (row == selectedMine.row && col == selectedMine.col && gameState == GameState.Lost) tile = Game.Skin.tClickedMine;
-                        else if (field[row, col].Mined) tile = Game.Skin.tMine;
                         else tile = Game.Skin.t[field[row, col].Number];
                     }
                     batch.Draw(tile, new Rectangle(8 + col * 16 - corner.col * 16, 64 + row * 16 - corner.row * 16, 16, 16), Color.White);

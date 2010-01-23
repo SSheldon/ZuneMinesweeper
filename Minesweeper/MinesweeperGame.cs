@@ -138,31 +138,26 @@ namespace Minesweeper
 
         public void UpdateBestTime(Difficulty difficulty)
         {
-            string beginnerPath = Path.Combine(container.Path, "beginnertime.dat");
-            string intermediatePath = Path.Combine(container.Path, "intermediatetime.dat");
-            string expertPath = Path.Combine(container.Path, "experttime.dat");
-            string zunePath = Path.Combine(container.Path, "zunetime.dat");
-
             BinaryWriter dataFile;
             switch (difficulty)
             {
                 case Difficulty.Beginner:
-                    dataFile = new BinaryWriter(new FileStream(beginnerPath, FileMode.Create));
+                    dataFile = new BinaryWriter(new FileStream(Path.Combine(container.Path, "beginnertime.dat"), FileMode.Create));
                     dataFile.Write(bestTimes[Difficulty.Beginner]);
                     dataFile.Close();
                     break;
                 case Difficulty.Intermediate:
-                    dataFile = new BinaryWriter(new FileStream(intermediatePath, FileMode.Create));
+                    dataFile = new BinaryWriter(new FileStream(Path.Combine(container.Path, "intermediatetime.dat"), FileMode.Create));
                     dataFile.Write(bestTimes[Difficulty.Intermediate]);
                     dataFile.Close();
                     break;
                 case Difficulty.Expert:
-                    dataFile = new BinaryWriter(new FileStream(expertPath, FileMode.Create));
+                    dataFile = new BinaryWriter(new FileStream(Path.Combine(container.Path, "experttime.dat"), FileMode.Create));
                     dataFile.Write(bestTimes[Difficulty.Expert]);
                     dataFile.Close();
                     break;
                 case Difficulty.Zune:
-                    dataFile = new BinaryWriter(new FileStream(zunePath, FileMode.Create));
+                    dataFile = new BinaryWriter(new FileStream(Path.Combine(container.Path, "zunetime.dat"), FileMode.Create));
                     dataFile.Write(bestTimes[Difficulty.Zune]);
                     dataFile.Close();
                     break;

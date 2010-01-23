@@ -15,7 +15,6 @@ namespace Minesweeper
     {
         public string name, creator;
         public bool itemsBacked, headersBacked;
-        public Vector3 vBackground, vColoredText, vUncoloredText;
 
         public Texture2D top;
         public Texture2D[] numbers = new Texture2D[12];
@@ -37,9 +36,9 @@ namespace Minesweeper
             this.creator = creator;
             this.itemsBacked = itemsBacked;
             this.headersBacked = headersBacked;
-            vBackground = background;
-            vColoredText = coloredText;
-            vUncoloredText = uncoloredText;
+            this.background = new Color(background);
+            this.coloredText = new Color(coloredText);
+            this.uncoloredText = new Color(uncoloredText);
         }
 
         public void InitializeTextures(string directory, ContentManager Content, SpriteFont normal, SpriteFont header, SpriteFont small)
@@ -85,10 +84,6 @@ namespace Minesweeper
 
             if (this.itemsBacked) itemBack = Content.Load<Texture2D>(directory + "/Menu/item back");
             if (this.headersBacked) headerBack = Content.Load<Texture2D>(directory + "/Menu/header back");
-
-            background = new Color(vBackground);
-            coloredText = new Color(vColoredText);
-            uncoloredText = new Color(vUncoloredText);
         }
     }
 

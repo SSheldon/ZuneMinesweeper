@@ -31,5 +31,15 @@ namespace Minesweeper
             UseTouch = useTouch;
             SelectedSkin = selectedSkin;
         }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is Options)) return false;
+            Options o = (Options)obj;
+            if (o.FlagWithPlay != FlagWithPlay) return false;
+            if (o.UseTouch != UseTouch) return false;
+            if (o.SelectedSkin != SelectedSkin) return false;
+            return true;
+        }
     }
 }

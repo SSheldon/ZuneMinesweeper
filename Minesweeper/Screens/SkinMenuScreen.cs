@@ -30,7 +30,7 @@ namespace Minesweeper
             skinMI = new MenuItem(skinNames[tempSelectedSkin]);
             Add(0, skinMI);
             change = new MenuItem("Change");
-            change.Clicked += new ItemClick(ChangeClick);
+            change.Clicked += () => Game.options.SelectedSkin = skinNames[tempSelectedSkin];
             Add(4, change);
             back = new MenuItem("Back");
             back.Clicked += new ItemClick(Back);
@@ -98,12 +98,6 @@ namespace Minesweeper
                 if (tempSelectedSkin == 0) tempSelectedSkin = Game.skins.Count - 1;
                 else tempSelectedSkin--;
             }
-        }
-
-
-        void ChangeClick()
-        {
-            Game.options.SelectedSkin = skinNames[tempSelectedSkin];
         }
     }
 }

@@ -10,12 +10,14 @@ namespace Minesweeper
         MenuItem heightMI, widthMI, minesMI, ok, back;
         int tempHeight, tempWidth, tempMines;
 
-        public CustomGameMenuScreen(MinesweeperGame game, int height, int width, int mines)
+        public CustomGameMenuScreen(MinesweeperGame game)
             : base(game, "Custom Game:")
         {
-            tempHeight = height;
-            tempWidth = width;
-            tempMines = mines;
+            GameplayScreen screen = Game.GameplayScreen;
+            tempHeight = screen.Height;
+            tempWidth = screen.Width;
+            tempMines = screen.Mines;
+            screen = null;
             
             heightMI = new MenuItem("Height");
             heightMI.backed = false;
@@ -27,7 +29,7 @@ namespace Minesweeper
             minesMI.backed = false;
             Add(2, minesMI);
             ok = new MenuItem("OK");
-            ok.Clicked += new ItemClick(OKClick);
+            ok.Clicked += () => NewGame(tempHeight, tempWidth, tempMines);
             Add(4, ok);
             back = new MenuItem("Back");
             back.Clicked += new ItemClick(Back);
@@ -105,12 +107,6 @@ namespace Minesweeper
                     if (tempMines < 10) tempMines = (tempHeight - 1) * (tempWidth - 1);
                     break;
             }
-        }
-
-
-        void OKClick()
-        {
-            NewGame(tempHeight, tempWidth, tempMines);
         }
     }
 }
