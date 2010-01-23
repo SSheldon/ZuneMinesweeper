@@ -65,6 +65,14 @@ public class InputState
 
     public bool IsNewButtonRelease(Buttons button)
     {
+        if (button == Buttons.A)
+        {
+            if ((currentTime - timeToLastPress[Buttons.DPadDown]).TotalMilliseconds <= 200 ||
+                (currentTime - timeToLastPress[Buttons.DPadUp]).TotalMilliseconds <= 200 ||
+                (currentTime - timeToLastPress[Buttons.DPadLeft]).TotalMilliseconds <= 200 ||
+                (currentTime - timeToLastPress[Buttons.DPadRight]).TotalMilliseconds <= 200)
+                return false;
+        }
         return current.IsButtonUp(button) && old.IsButtonDown(button);
     }
 

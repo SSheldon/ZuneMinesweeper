@@ -65,23 +65,23 @@ public class Field : IEnumerable
     {
         int[] randomNumbers = new int[mines];
         Random rand = new Random();
-        for (int counter = 0; counter < mines; counter++)
+        for (int i = 0; i < mines; i++)
         {
             bool alreadyContained;
             do
             {
                 alreadyContained = false;
                 int randomNumber = rand.Next(0, height * width - 1);
-                for (int counter2 = 0; counter2 < counter; counter2++)
+                for (int j = 0; j < i; j++)
                 {
-                    if (randomNumbers[counter2] == randomNumber) alreadyContained = true;
+                    if (randomNumbers[j] == randomNumber) alreadyContained = true;
                 }
-                if (!alreadyContained) randomNumbers[counter] = randomNumber;
+                if (!alreadyContained) randomNumbers[i] = randomNumber;
             } while (alreadyContained);
         }
-        for (int counter = 0; counter < mines; counter++)
+        foreach (int i in randomNumbers)
         {
-            tiles[randomNumbers[counter] / width, randomNumbers[counter] % width].Mined = true;
+            tiles[i / width, i % width].Mined = true;
         }
     }
 
@@ -176,24 +176,23 @@ public class Field : IEnumerable
     /// </summary>
     public bool TouchingHiddenTile(int row, int col)
     {
-        bool anyHidden = false;
-        if (row != 0) 
-            if (tiles[(row - 1), col].Hidden && !tiles[(row - 1), col].Flagged) anyHidden = true;
-        if (col != 0) 
-            if (tiles[row, (col - 1)].Hidden && !tiles[row, (col - 1)].Flagged) anyHidden = true;
-        if (row != 0 && col != 0)
-            if (tiles[(row - 1), (col - 1)].Hidden && !tiles[(row - 1), (col - 1)].Flagged) anyHidden = true;
-        if (col != width - 1)
-            if (tiles[row, (col + 1)].Hidden && !tiles[row, (col + 1)].Flagged) anyHidden = true;
-        if (row != 0 && col != width - 1)
-            if (tiles[(row - 1), (col + 1)].Hidden && !tiles[(row - 1), (col + 1)].Flagged) anyHidden = true;
-        if (row != height - 1)
-            if (tiles[(row + 1), col].Hidden && !tiles[(row + 1), col].Flagged) anyHidden = true;
-        if (row != height - 1 && col != 0)
-            if (tiles[(row + 1), (col - 1)].Hidden && !tiles[(row + 1), (col - 1)].Flagged) anyHidden = true;
-        if (row != height - 1 && col != width - 1)
-            if (tiles[(row + 1), (col + 1)].Hidden && !tiles[(row + 1), (col + 1)].Flagged) anyHidden = true;
-        return anyHidden;
+        if (row != 0 && tiles[(row - 1), col].Hidden && !tiles[(row - 1), col].Flagged)
+            return true;
+        if (col != 0 && tiles[row, (col - 1)].Hidden && !tiles[row, (col - 1)].Flagged)
+            return true;
+        if (row != 0 && col != 0 && tiles[(row - 1), (col - 1)].Hidden && !tiles[(row - 1), (col - 1)].Flagged)
+            return true;
+        if (col != width - 1 && tiles[row, (col + 1)].Hidden && !tiles[row, (col + 1)].Flagged)
+            return true;
+        if (row != 0 && col != width - 1 && tiles[(row - 1), (col + 1)].Hidden && !tiles[(row - 1), (col + 1)].Flagged)
+            return true;
+        if (row != height - 1 && tiles[(row + 1), col].Hidden && !tiles[(row + 1), col].Flagged)
+            return true;
+        if (row != height - 1 && col != 0 && tiles[(row + 1), (col - 1)].Hidden && !tiles[(row + 1), (col - 1)].Flagged)
+            return true;
+        if (row != height - 1 && col != width - 1 && tiles[(row + 1), (col + 1)].Hidden && !tiles[(row + 1), (col + 1)].Flagged)
+            return true;
+        return false;
     }
 
     /// <summary>
@@ -203,13 +202,11 @@ public class Field : IEnumerable
     {
         get
         {
-            bool moreTilesToReveal = false;
             foreach (Tile tile in this)
             {
-                if (!tile.Mined && tile.Hidden) moreTilesToReveal = true;
-                if (moreTilesToReveal) break;
+                if (!tile.Mined && tile.Hidden) return false;
             }
-            return !moreTilesToReveal;
+            return true;
         }
     }
 
@@ -271,13 +268,11 @@ public class Field : IEnumerable
     {
         get
         {
-            bool allHidden = true;
             foreach (Tile tile in this)
             {
-                if (!tile.Hidden) allHidden = false;
-                if (!allHidden) break;
+                if (!tile.Hidden) return false;
             }
-            return allHidden;
+            return true;
         }
     }
 }
